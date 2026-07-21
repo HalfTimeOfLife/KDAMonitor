@@ -63,6 +63,24 @@ KDAMonitor is a learning and research project intended for use in isolated, offl
 
 ---
 
+## Resources
+
+### Official documentation
+- [Windows Driver Kit documentation](https://learn.microsoft.com/en-us/windows-hardware/drivers/)
+- [Getting Started with Windows Drivers](https://learn.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/)
+- [Kernel-Mode Driver APIs reference](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/)
+- [Windows Filtering Platform documentation](https://learn.microsoft.com/en-us/windows/win32/fwp/windows-filtering-platform-start-page)
+- [Debugging Tools for Windows / WinDbg](https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/)
+
+### Code samples
+- [microsoft/Windows-driver-samples](https://github.com/microsoft/Windows-driver-samples)
+
+### Books
+- *Windows Kernel Programming*, Pavel Yosifovich (2nd edition)
+- *Windows Internals*, Yosifovich / Solomon / Ionescu (7th edition) — used as a reference, not read cover to cover
+
+---
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
