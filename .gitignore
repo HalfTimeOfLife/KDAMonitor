@@ -1,0 +1,20 @@
+# Build artifacts
+build/
+obj/
+Debug/
+Release/
+x64/
+*.sys
+*.pdb
+*.cer
+*.exp
+*.lib
+*.log
+
+# WDK / Visual Studio
+*.vcxproj.user
+*.suo
+.vs/
+
+# Misc
+*.tmp
