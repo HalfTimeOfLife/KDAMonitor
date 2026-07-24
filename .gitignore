@@ -1,20 +1,35 @@
-# Build artifacts
-build/
-obj/
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.sdf
+*.opensdf
+*.VC.db
+*.VC.VC.opendb
+
+# Build output
+x64/
+x86/
+ARM/
+ARM64/
 Debug/
 Release/
-x64/
+build/
+obj/
+
+# WDK / driver artifacts
 *.sys
 *.pdb
 *.cer
 *.exp
 *.lib
 *.log
+*.wpp.h
+*.tlog
 
-# WDK / Visual Studio
-*.vcxproj.user
-*.suo
-.vs/
+# NuGet / WDK packages (restaurables via NuGet, pas besoin de les committer)
+packages/
+*.nupkg
 
-# Misc
-*.tmp
+# Driver signing / test cert (si généré localement, à ne jamais committer)
+*.pfx
