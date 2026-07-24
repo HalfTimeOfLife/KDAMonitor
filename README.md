@@ -1,9 +1,8 @@
 # KDAMonitor - Kernel Driver Activity Monitor
 
+A Windows kernel driver (in C) for logging process, image load, network connection and registry activity in real time.
 
-
-A Windows kernel driver (in C) for malware sandbox analysis, logging process, image load, network connection and registry activity in real time.
-
+> ⚠️ Learning/research project: intended for isolated sandbox VMs only, do not use in production.
 ---
 
 ## Status
@@ -16,10 +15,10 @@ Early development: currently at **v0.1 (driver skeleton)**. No monitoring featur
 
 KDAMonitor is made of two components:
 
-- **`driver/`**: a Windows kernel driver (`.sys`) that runs at the kernel level, registering with native kernel callbacks (process, thread, image load, registry) and WFP (network connections) to observe system activity from a point malware cannot easily see or bypass.
-- **`client/`** *(not implemented yet, see v0.11)*: a usermode command-line application that connects to the driver to display events in real time. The driver is designed to log independently to disk, so the client is only a convenience viewer, not a required component for data integrity.
+- **`driver/`**: a Windows kernel driver (`.sys`) that runs at the kernel level, registering with native kernel callbacks (process, thread, image load, registry) and WFP (network) to observe system activity from a point malware cannot easily see or bypass.
+- **`client/`** *(not implemented yet, see v0.11)*: a usermode command-line application that connects to the driver to display events in real time. The driver is designed to log independently to disk, so the client is only a convenience viewer.
 
-The intended use case is malware sandbox analysis: run a sample in an isolated VM with KDAMonitor loaded, and get a full timeline of its process, network, and persistence activity after execution.
+The intended use case is malware sandbox analysis: run a sample in an isolated VM with KDAMonitor loaded, and get a full timeline (through logs) of its process, network, and persistence activity after execution.
 
 ---
 
@@ -35,31 +34,28 @@ The intended use case is malware sandbox analysis: run a sample in an isolated V
 
 ```bash
 KDAMonitor/
-├── driver/
-│   ├── src/
-│   │   └── driver_entry.c
-│   ├── include/
-│   │   └── driver.h
-│   └── KDAMonitor.inf
-├── docs/
+├── docs
 │   └── crashes.md
+├── driver
+│   ├── include
+│   │   └── driver.h
+│   ├── src
+│   │   └── driver_entry.c
+│   ├── KDAMonitor.inf
+│   ├── KDAMonitor.vcxproj
+│   └── packages.config
 ├── .gitignore
+├── KDAMonitor.sln
+├── LICENSE
 ├── README.md
-├── ROADMAP.md
-└── LICENSE
+└── ROADMAP.md
 ```
 
 ---
 
 ## Building
 
-*(To be documented once the build process is finalized: WDK project setup, signing, deployment to test VM.)*
-
----
-
-## Disclaimer
-
-KDAMonitor is a learning and research project intended for use in isolated, offline sandbox VMs only. It is not intended for production or endpoint protection use.
+**Not documented yet.** The driver currently has no observable behavior beyond load/unload (see [ROADMAP.md](./ROADMAP.md)). A proper build and installation guide will be added once the core mechanisms (device, event queue, disk logging) are in place around v0.4.
 
 ---
 
