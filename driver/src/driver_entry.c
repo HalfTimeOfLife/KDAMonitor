@@ -1,36 +1,34 @@
 #include "driver.h"
+#include "device.h"
+#include "ioctl.h"
+#include "kdamon_config.h"
+
+
+PDEVICE_OBJECT g_DeviceObject = NULL;
 
 void DriverUnload(_In_ PDRIVER_OBJECT DriverObject)
 {
 	UNREFERENCED_PARAMETER(DriverObject);
 
+	KdaMonDeleteDevice(g_DeviceObject);
 	KdPrint((DRIVER_TAG " [SUCCESS]: Driver Unload called\n"));
 }
 
 NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
 {
 	UNREFERENCED_PARAMETER(RegistryPath);
+
 	DriverObject->DriverUnload = DriverUnload;
+	DriverObject->MajorFunction[IRP_MJ_CREATE] = KdaMonCreateClose;
+	DriverObject->MajorFunction[IRP_MJ_CLOSE] = KdaMonCreateClose;
+	DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = KdaMonDeviceControl;
+
+	NTSTATUS status = KdaMonCreateDevice(DriverObject, &g_DeviceObject);
+	if (!NT_SUCCESS(status))
+	{
+		return status;
+	}
 
 	KdPrint((DRIVER_TAG " [SUCCESS]: Initialized successfully\n"));
-
-	RTL_OSVERSIONINFOW lpVersionInformation = { 0 };
-	lpVersionInformation.dwOSVersionInfoSize = sizeof(lpVersionInformation);
-
-	NTSTATUS status = RtlGetVersion(&lpVersionInformation);
-
-	if (NT_SUCCESS(status))
-	{
-		KdPrint((DRIVER_TAG " [SUCCESS]: Windows %lu.%lu Build %lu\n",
-			lpVersionInformation.dwMajorVersion,
-			lpVersionInformation.dwMinorVersion,
-			lpVersionInformation.dwBuildNumber
-			));
-	}
-	else
-	{
-		KdPrint((DRIVER_TAG " [ERROR]: Windows version not found\n"));
-	}
-
 	return STATUS_SUCCESS;
 }
