@@ -4,25 +4,6 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
-## [0.1] - Driver Skeleton
-Basic driver: loading and unloading cleanly.
-
-### Added
-- `driver_entry.c`: `DriverEntry` / `DriverUnload`, minimal load/unload cycle
-- Validated on Windows test VM (no BSOD, no leak)
-
----
-
-## [0.2] - Device + IOCTL
-Open a communication channel between the driver and a future usermode client.
-
-### Added
-- `device.c`: device object creation/deletion
-- `ioctl.c`: `IRP_MJ_DEVICE_CONTROL` handler, echo round-trip
-- `kdamon_shared.h`: IOCTL codes shared between driver and client
-
----
-
 ## [0.3] - Event Queue
 An internal buffer where every future callback (process, network, registry...) will push its events.
 
@@ -123,8 +104,8 @@ Validated against real malware samples in isolated VM and write full docs + READ
 
 | Version | File(s) | Feature | Status |
 |---|---|---|---|
-| v0.1 | `driver_entry.c` | Driver skeleton (load/unload) | Planned |
-| v0.2 | `device.c`, `ioctl.c` | Device object + IOCTL | Planned |
+| v0.1 | `driver_entry.c` | Driver skeleton (load/unload) | Shipped |
+| v0.2 | `device.c`, `ioctl.c` | Device object + IOCTL | Shipped |
 | v0.3 | `event_queue.c` | Kernel event queue | Planned |
 | v0.4 | `log_writer.c` | Logging | Planned |
 | v0.5 | `process_callback.c` | Process create/exit monitoring | Planned |

@@ -7,7 +7,7 @@ A Windows kernel driver (in C) for logging process, image load, network connecti
 
 ## Status
 
-Early development: currently at **v0.1 (driver skeleton)**. No monitoring feature is implemented yet. See [ROADMAP.md](./ROADMAP.md) for planned versions.
+Early development: currently at **v0.2 (device + IOCTL echo)**.. No monitoring feature is implemented yet. See [ROADMAP.md](./ROADMAP.md) for planned versions.
 
 ---
 
@@ -16,7 +16,7 @@ Early development: currently at **v0.1 (driver skeleton)**. No monitoring featur
 KDAMonitor is made of two components:
 
 - **`driver/`**: a Windows kernel driver (`.sys`) that runs at the kernel level, registering with native kernel callbacks (process, thread, image load, registry) and WFP (network) to observe system activity from a point malware cannot easily see or bypass.
-- **`client/`** *(not implemented yet, see v0.11)*: a usermode command-line application that connects to the driver to display events in real time. The driver is designed to log independently to disk, so the client is only a convenience viewer.
+- **`client/`** *(minimal test client for now; full real-time viewer planned for v0.11)*: a usermode command-line application that connects to the driver...
 
 The intended use case is malware sandbox analysis: run a sample in an isolated VM with KDAMonitor loaded, and get a full timeline (through logs) of its process, network, and persistence activity after execution.
 
@@ -34,15 +34,29 @@ The intended use case is malware sandbox analysis: run a sample in an isolated V
 
 ```bash
 KDAMonitor/
+├── client
+│   ├── include
+│   │   └── client.h
+│   ├── src
+│   │   └── client.c
+│   ├── client.vcxproj
+│   └── client.vcxproj.filters
 ├── docs
 │   └── crashes.md
 ├── driver
 │   ├── include
-│   │   └── driver.h
+│   │   ├── device.h
+│   │   ├── driver.h
+│   │   ├── ioctl.h
+│   │   ├── kdamon_config.h
+│   │   └── kdamon_shared.h
 │   ├── src
-│   │   └── driver_entry.c
+│   │   ├── device.c
+│   │   ├── driver_entry.c
+│   │   └── ioctl.c
 │   ├── KDAMonitor.inf
 │   ├── KDAMonitor.vcxproj
+│   ├── KDAMonitor.vcxproj.filters
 │   └── packages.config
 ├── .gitignore
 ├── KDAMonitor.sln
