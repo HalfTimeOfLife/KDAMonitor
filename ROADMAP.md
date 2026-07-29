@@ -4,15 +4,6 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
-## [0.3] - Event Queue
-An internal buffer where every future callback (process, network, registry...) will push its events.
-
-### Added
-- `event_queue.c`: ring buffer + spinlock, push/pop API
-- Designed for reuse by every callback introduced from v0.5 onward
-
----
-
 ## [0.4] - Log Writer
 The queue now empties itself automatically to a log file on disk.
 
@@ -106,7 +97,7 @@ Validated against real malware samples in isolated VM and write full docs + READ
 |---|---|---|---|
 | v0.1 | `driver_entry.c` | Driver skeleton (load/unload) | Shipped |
 | v0.2 | `device.c`, `ioctl.c` | Device object + IOCTL | Shipped |
-| v0.3 | `event_queue.c` | Kernel event queue | Planned |
+| v0.3 | `event_queue.c` | Kernel event queue | Shipped |
 | v0.4 | `log_writer.c` | Logging | Planned |
 | v0.5 | `process_callback.c` | Process create/exit monitoring | Planned |
 | v0.6 | `image_callback.c` | Image/DLL load monitoring | Planned |

@@ -7,7 +7,7 @@ A Windows kernel driver (in C) for logging process, image load, network connecti
 
 ## Status
 
-Early development: currently at **v0.2 (device + IOCTL echo)**.. No monitoring feature is implemented yet. See [ROADMAP.md](./ROADMAP.md) for planned versions.
+Early development: currently at **v0.3 (kernel event queue)**. No monitoring feature is implemented yet. See [ROADMAP.md](./ROADMAP.md) for planned versions.
 
 ---
 
@@ -30,7 +30,7 @@ The intended use case is malware sandbox analysis: run a sample in an isolated V
 
 ---
 
-## Project structure (v0.1)
+## Project structure (v0.3)
 
 ```bash
 KDAMonitor/
@@ -47,18 +47,22 @@ KDAMonitor/
 │   ├── include
 │   │   ├── device.h
 │   │   ├── driver.h
+│   │   ├── event_queue.h
+│   │   ├── event_types.h
 │   │   ├── ioctl.h
 │   │   ├── kdamon_config.h
 │   │   └── kdamon_shared.h
 │   ├── src
 │   │   ├── device.c
 │   │   ├── driver_entry.c
+│   │   ├── event_queue.c
 │   │   └── ioctl.c
 │   ├── KDAMonitor.inf
 │   ├── KDAMonitor.vcxproj
 │   ├── KDAMonitor.vcxproj.filters
 │   └── packages.config
 ├── .gitignore
+├── CHANGELOG.md
 ├── KDAMonitor.sln
 ├── LICENSE
 ├── README.md
