@@ -108,11 +108,14 @@
   <ItemGroup>
     <ClCompile Include="src\device.c" />
     <ClCompile Include="src\driver_entry.c" />
+    <ClCompile Include="src\event_queue.c" />
     <ClCompile Include="src\ioctl.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\device.h" />
     <ClInclude Include="include\driver.h" />
+    <ClInclude Include="include\event_queue.h" />
+    <ClInclude Include="include\event_types.h" />
     <ClInclude Include="include\ioctl.h" />
     <ClInclude Include="include\kdamon_config.h" />
     <ClInclude Include="include\kdamon_shared.h" />
