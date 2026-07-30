@@ -3,6 +3,7 @@
 #include "ioctl.h"
 #include "kdamon_config.h"
 #include "event_queue.h"
+#include "log_writer.h"
 
 
 PDEVICE_OBJECT g_DeviceObject = NULL;
@@ -11,6 +12,7 @@ void DriverUnload(_In_ PDRIVER_OBJECT DriverObject)
 {
 	UNREFERENCED_PARAMETER(DriverObject);
 
+	KdaMonLogWriterStop();
 	KdaMonEventQueueDestroy();
 	KdaMonDeleteDevice(g_DeviceObject);
 	KdPrint((DRIVER_TAG " [SUCCESS]: Driver Unload called\n"));
@@ -36,6 +38,11 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 		KdPrint((DRIVER_TAG " [ERROR]: EventQueueInitialize failed\n"));
 		return STATUS_UNSUCCESSFUL;
 	}
+	if (!KdaMonLogWriterStart(DriverObject))
+	{
+		KdPrint((DRIVER_TAG " [ERROR]: KdaMonLogWriterStart failed\n"));
+		return STATUS_UNSUCCESSFUL;
+	}
 
 	KdPrint((DRIVER_TAG " [SUCCESS]: Initialized successfully\n"));
 
@@ -49,15 +56,6 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 	testEvent2.Type = KdaMonEventNetwork;
 	KeQuerySystemTimePrecise(&testEvent2.Timestamp);
 	KdaMonEventQueuePush(&testEvent2);
-
-	KdPrint((DRIVER_TAG " [TEST]: Queue count after 2 pushes = %lu\n", KdaMonEventQueueCount()));
-
-	KDAMON_EVENT popped;
-	while (KdaMonEventQueuePop(&popped)) {
-		KdPrint((DRIVER_TAG " [TEST]: Popped event Id=%lu Type=%d\n", popped.Id, popped.Type));
-	}
-
-	KdPrint((DRIVER_TAG " [TEST]: Queue count after pops = %lu\n", KdaMonEventQueueCount()));
 	// --- END TEST QUEUE ---
 
 	return STATUS_SUCCESS;
