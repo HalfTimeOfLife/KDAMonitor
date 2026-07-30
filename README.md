@@ -7,7 +7,7 @@ A Windows kernel driver (in C) for logging process, image load, network connecti
 
 ## Status
 
-Early development: currently at **v0.3 (kernel event queue)**. No monitoring feature is implemented yet. See [ROADMAP.md](./ROADMAP.md) for planned versions.
+Early development: currently at **v0.4 (disk logging)**. No monitoring feature is implemented yet. See [ROADMAP.md](./ROADMAP.md) for planned versions.
 
 ---
 
@@ -30,7 +30,7 @@ The intended use case is malware sandbox analysis: run a sample in an isolated V
 
 ---
 
-## Project structure (v0.3)
+## Project structure (v0.4)
 
 ```bash
 KDAMonitor/
@@ -42,6 +42,8 @@ KDAMonitor/
 │   ├── client.vcxproj
 │   └── client.vcxproj.filters
 ├── docs
+│   ├── dumps
+│   │   └── IRQL_NOT_LESS_OR_EQUAL.dmp
 │   └── crashes.md
 ├── driver
 │   ├── include
@@ -51,12 +53,14 @@ KDAMonitor/
 │   │   ├── event_types.h
 │   │   ├── ioctl.h
 │   │   ├── kdamon_config.h
-│   │   └── kdamon_shared.h
+│   │   ├── kdamon_shared.h
+│   │   └── log_writer.h
 │   ├── src
 │   │   ├── device.c
 │   │   ├── driver_entry.c
 │   │   ├── event_queue.c
-│   │   └── ioctl.c
+│   │   ├── ioctl.c
+│   │   └── log_writer.c
 │   ├── KDAMonitor.inf
 │   ├── KDAMonitor.vcxproj
 │   ├── KDAMonitor.vcxproj.filters
@@ -73,7 +77,49 @@ KDAMonitor/
 
 ## Building
 
-**Not documented yet.** The driver currently has no observable behavior beyond load/unload (see [ROADMAP.md](./ROADMAP.md)). A proper build and installation guide will be added once the core mechanisms (device, event queue, disk logging) are in place around v0.4.
+### Build
+
+Open `KDAMonitor.sln` in Visual Studio with the WDK extension installed, and build the `KDAMonitor` project (Debug or Release, x64). The compiled driver (`KDAMonitor.sys`) is output to `x64\<Configuration>\KDAMonitor.sys` at the solution root.
+
+### Test signing
+
+The driver is not signed by a trusted CA, so the target VM must have test signing enabled:
+
+```bash
+bcdedit /set testsigning on
+```
+
+Reboot for this to take effect.
+
+### Loading the driver
+
+From an elevated command prompt on the test VM:
+
+```bash
+mkdir C:\Drivers
+copy <path-to>\KDAMonitor.sys C:\Drivers
+sc create KDAMonitor type= kernel binPath= C:\Drivers\KDAMonitor.sys
+sc start KDAMonitor
+```
+
+The driver creates `C:\KDAMonitor\logs\` on its own if missing, and writes one timestamped `.jsonl` log file per session there.
+
+### Unloading the driver
+
+```bash
+sc stop KDAMonitor
+sc delete KDAMonitor
+```
+
+### Notes
+
+- Kernel debug output (`KdPrint`) requires [DebugView](https://learn.microsoft.com/en-us/sysinternals/downloads/debugview) running as Administrator with **Capture Kernel** enabled, and the debug print filter set:
+
+
+```bash
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Debug Print Filter" /v DEFAULT /t REG_DWORD /d 0xFFFFFFFF /f
+```
+Reboot after setting this.
 
 ---
 

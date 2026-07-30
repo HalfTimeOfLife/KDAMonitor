@@ -4,16 +4,6 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
-## [0.4] - Log Writer
-The queue now empties itself automatically to a log file on disk.
-
-### Added
-- `log_writer.c`: system thread draining the event queue
-- Writes JSONL log to disk (one file per session), independent of client presence
-- Reuses `event_queue.c` introduced in v0.3
-
----
-
 ## [0.5] - Process Callback
 First  sensor: every time a process starts or exits, an event is pushed into the queue built in v0.3.
 
@@ -98,7 +88,7 @@ Validated against real malware samples in isolated VM and write full docs + READ
 | v0.1 | `driver_entry.c` | Driver skeleton (load/unload) | Shipped |
 | v0.2 | `device.c`, `ioctl.c` | Device object + IOCTL | Shipped |
 | v0.3 | `event_queue.c` | Kernel event queue | Shipped |
-| v0.4 | `log_writer.c` | Logging | Planned |
+| v0.4 | `log_writer.c` | Logging | Shipped |
 | v0.5 | `process_callback.c` | Process create/exit monitoring | Planned |
 | v0.6 | `image_callback.c` | Image/DLL load monitoring | Planned |
 | v0.7 | `wfp_session.c` | WFP session setup | Planned |
