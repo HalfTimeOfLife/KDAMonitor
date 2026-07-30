@@ -14,7 +14,7 @@ typedef struct _KDAMON_EVENT_QUEUE
     ULONG NextId;
 
     KSPIN_LOCK Lock;
-
+    KEVENT WakeEvent;
 } KDAMON_EVENT_QUEUE;
 
 static KDAMON_EVENT_QUEUE g_EventQueue;
@@ -35,6 +35,7 @@ BOOLEAN KdaMonEventQueueInitialize(VOID)
 {
     RtlZeroMemory(&g_EventQueue, sizeof(g_EventQueue));
 
+    KeInitializeEvent(&g_EventQueue.WakeEvent, SynchronizationEvent, FALSE);
     KeInitializeSpinLock(&g_EventQueue.Lock);
 
     return TRUE;
@@ -68,6 +69,8 @@ BOOLEAN KdaMonEventQueuePush(_In_ KDAMON_EVENT* Event)
     g_EventQueue.Tail = EventQueueNextIndex(g_EventQueue.Tail);
 
     g_EventQueue.Count++;
+
+    KeSetEvent(&g_EventQueue.WakeEvent, IO_NO_INCREMENT, FALSE);
 
     KeReleaseSpinLock(&g_EventQueue.Lock, OldIrql);
 
@@ -113,4 +116,9 @@ ULONG KdaMonEventQueueCount(VOID)
     KeReleaseSpinLock(&g_EventQueue.Lock, OldIrql);
 
     return EventCount;
+}
+
+PRKEVENT KdaMonEventQueueGetWakeEvent(VOID)
+{
+    return &g_EventQueue.WakeEvent;
 }
