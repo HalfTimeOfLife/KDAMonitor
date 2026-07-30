@@ -24,7 +24,7 @@ The intended use case is malware sandbox analysis: run a sample in an isolated V
 
 ## Architecture (v0.4)
 
-![KDAMonitor architecture](assets\kdamonitor_architecture.svg)
+![KDAMonitor architecture](docs/kdamonitor_architecture.svg)
 
 ---
 
@@ -48,6 +48,7 @@ KDAMonitor/
 │   ├── client.vcxproj
 │   └── client.vcxproj.filters
 ├── docs
+│   ├── kdamonitor_architecture.svg
 │   ├── dumps
 │   │   └── IRQL_NOT_LESS_OR_EQUAL.dmp
 │   └── crashes.md
