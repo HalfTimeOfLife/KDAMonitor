@@ -5,11 +5,14 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 ---
 
 ## [0.5] - Process Callback
-First  sensor: every time a process starts or exits, an event is pushed into the queue built in v0.3.
+First sensor: every time a process starts or exits, an event is pushed into the queue built in v0.3, and written to the log through the standard pipeline.
 
 ### Added
 - `process_callback.c`: `PsSetCreateProcessNotifyRoutineEx`, logs process create/exit
 - Pushes into `event_queue.c` (v0.3)
+- `event_types.h`: `KDAMON_PROCESS_EVENT_DATA` (PID, PPID, create/exit flag, image name)
+- `log_writer.c`: `KdaMonLogWriterWriteProcessEvent`, dispatched via switch in `KdaMonLogWriterWriteEvent`
+- JSON string escaping for image path (backslashes)
 
 ---
 
@@ -18,6 +21,7 @@ Second sensor: logs every DLL/driver loaded into a process.
 
 ### Added
 - `image_callback.c`: `PsSetLoadImageNotifyRoutine`, logs DLL/driver loads
+- `log_writer.c`: dedicated write function, `KdaMonLogWriterWriteImageEvent`, for image load events, per established pattern
 
 ---
 
@@ -36,6 +40,7 @@ Third sensor: logs connections (PID, IP/port, protocol).
 ### Added
 - `wfp_callout.c`: notification-only outbound connection logging
 - Captures PID, IP/port, protocol
+- `log_writer.c`: dedicated write function, `KdaMonLogWriterWriteNetworkEvent`, for network events, per established pattern
 
 ---
 
@@ -44,6 +49,7 @@ Fourth sensor: logs registry activity.
 
 ### Added
 - `registry_callback.c`: logs create/set/delete value
+- `log_writer.c`: dedicated write function, `KdaMonLogWriterWriteRegistryEvent`, for registry events, per established pattern
 
 ---
 
@@ -52,6 +58,7 @@ Last sensor: capture thread create/exit events.
 
 ### Added
 - `thread_callback.c`: `PsSetCreateThreadNotifyRoutine`, logs thread create/exit
+- `log_writer.c`: dedicated write function, `KdaMonLogWriterWriteThreadEvent`, for thread events, per established pattern
 
 ---
 
@@ -77,7 +84,6 @@ Validated against real malware samples in isolated VM and write full docs + READ
 
 ### Added
 - Full README + usage docs
-
 
 ---
 
