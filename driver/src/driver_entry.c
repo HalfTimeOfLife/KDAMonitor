@@ -5,6 +5,7 @@
 #include "event_queue.h"
 #include "log_writer.h"
 #include "process_callback.h"
+#include "image_callback.h"
 
 
 PDEVICE_OBJECT g_DeviceObject = NULL;
@@ -13,6 +14,7 @@ void DriverUnload(_In_ PDRIVER_OBJECT DriverObject)
 {
 	UNREFERENCED_PARAMETER(DriverObject);
 
+	KdaMonImageCallbackUnregister();
 	KdaMonProcessCallbackUnregister();
 	KdaMonLogWriterStop();
 	KdaMonEventQueueDestroy();
@@ -53,6 +55,13 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 	if (!NT_SUCCESS(KdaMonProcessCallbackRegister()))
 	{
 		KdPrint((DRIVER_TAG " [ERROR]: KdaMonProcessCallbackRegister failed\n"));
+		return STATUS_UNSUCCESSFUL;
+	}
+
+	// --- Register image load callback ---
+	if (!NT_SUCCESS(KdaMonImageCallbackRegister()))
+	{
+		KdPrint((DRIVER_TAG " [ERROR]: KdaMonImageCallbackRegister failed\n"));
 		return STATUS_UNSUCCESSFUL;
 	}
 

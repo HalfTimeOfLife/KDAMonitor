@@ -109,7 +109,36 @@ static NTSTATUS KdaMonLogWriterWriteProcessEvent(_In_ const KDAMON_EVENT* Event,
     );
 }
 
-// TODO: KdaMonLogWriterWriteImageEvent (v0.6)
+static NTSTATUS KdaMonLogWriterWriteImageEvent(_In_ const KDAMON_EVENT* Event, _Out_writes_z_(BufferSize) PSTR EventBuffer, _In_ SIZE_T BufferSize)
+{
+    CHAR EscapedImage[520];
+    if (!KdaMonJsonEscapeW(Event->Data.ImageLoad.ImageFileName, EscapedImage, sizeof(EscapedImage)))
+    {
+        KdPrint((DRIVER_TAG " [WARNING]: Image path truncated during JSON escape (event %lu)\n", Event->Id));
+	}
+	return RtlStringCbPrintfA(
+		EventBuffer,
+		BufferSize,
+		"{\"id\":%lu,\"type\":\"%s\",\"timestamp\":%lld,"
+		"\"pid\":%lu,\"image_base\":\"%p\",\"image_size\":%llu,"
+		"\"system_mode_image\":%s,\"image_mapped_to_all_pids\":%s,"
+		"\"image_partial_map\":%s,\"signature_level\":%u,\"signature_type\":%u,"
+		"\"image\":\"%s\"}\n",
+		Event->Id,
+		KdaMonEventTypeToString(Event->Type),
+		Event->Timestamp.QuadPart,
+		(ULONG)(ULONG_PTR)Event->Data.ImageLoad.ProcessId,
+		Event->Data.ImageLoad.ImageBase,
+		(unsigned long long)Event->Data.ImageLoad.ImageSize,
+		Event->Data.ImageLoad.SystemModeImage ? "true" : "false",
+		Event->Data.ImageLoad.ImageMappedToAllPids ? "true" : "false",
+		Event->Data.ImageLoad.ImagePartialMap ? "true" : "false",
+		Event->Data.ImageLoad.SignatureLevel,
+		Event->Data.ImageLoad.SignatureType,
+		EscapedImage
+	);
+}
+
 // TODO: KdaMonLogWriterWriteNetworkEvent (v0.8)
 // TODO: KdaMonLogWriterWriteRegistryEvent (v0.9)
 // TODO: KdaMonLogWriterWriteThreadEvent (v0.10)
@@ -275,7 +304,9 @@ static NTSTATUS KdaMonLogWriterWriteEvent(_In_ const KDAMON_EVENT* Event)
     case KdaMonEventProcess:
         status = KdaMonLogWriterWriteProcessEvent(Event, EventBuffer, sizeof(EventBuffer));
         break;
-		// TODO: case KdaMonEventImageLoad: (v0.6)
+	case KdaMonEventImageLoad:
+		status = KdaMonLogWriterWriteImageEvent(Event, EventBuffer, sizeof(EventBuffer));
+		break;
 		// TODO: case KdaMonEventNetwork: (v0.8)
 		// TODO: case KdaMonEventRegistry: (v0.9)
 		// TODO: case KdaMonEventThread: (v0.10)

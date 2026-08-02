@@ -116,6 +116,7 @@
     <ClCompile Include="src\device.c" />
     <ClCompile Include="src\driver_entry.c" />
     <ClCompile Include="src\event_queue.c" />
+    <ClCompile Include="src\image_callback.c" />
     <ClCompile Include="src\ioctl.c" />
     <ClCompile Include="src\log_writer.c" />
     <ClCompile Include="src\process_callback.c" />
@@ -125,6 +126,7 @@
     <ClInclude Include="include\driver.h" />
     <ClInclude Include="include\event_queue.h" />
     <ClInclude Include="include\event_types.h" />
+    <ClInclude Include="include\image_callback.h" />
     <ClInclude Include="include\ioctl.h" />
     <ClInclude Include="include\kdamon_config.h" />
     <ClInclude Include="include\kdamon_shared.h" />
