@@ -4,6 +4,28 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.5] - 2026-08-02
+
+First sensor: every time a process starts or exits, an event is pushed into the queue built in v0.3, and written to the log through the standard pipeline.
+
+### Added
+- `process_callback.c`/`.h`: `PsSetCreateProcessNotifyRoutineEx` callback, logs process create/exit
+- Registered/unregistered in `DriverEntry`/`DriverUnload`
+- Pushes into `event_queue.c` (v0.3)
+- `event_types.h`: `KDAMON_PROCESS_EVENT_DATA` (PID, PPID, create/exit flag, fixed-size image name)
+- `log_writer.c`: `KdaMonLogWriterWriteProcessEvent`, dispatched via switch in `KdaMonLogWriterWriteEvent`
+- `log_writer.c`: `KdaMonJsonEscapeW` helper for safe JSON string escaping (backslashes, quotes) of NT-style paths
+
+### Changed
+- `ppid` is serialized as JSON `null` instead of `0` for exit events, where no parent PID is provided by the kernel
+
+### Fixed
+- `EventBuffer` in `log_writer.c` undersized for worst-case process event payload (256 -> 1000 bytes), causing silent event drops on long paths
+
+---
+
+---
+
 ## [0.4] - 2026-07-30
 ### Added
 - `log_writer.c`/`log_writer.h`: system thread draining the event queue, writes timestamped JSONL log file to disk (`C:\KDAMonitor\logs\`)

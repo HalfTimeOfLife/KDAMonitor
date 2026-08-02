@@ -4,18 +4,6 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
-## [0.5] - Process Callback
-First sensor: every time a process starts or exits, an event is pushed into the queue built in v0.3, and written to the log through the standard pipeline.
-
-### Added
-- `process_callback.c`: `PsSetCreateProcessNotifyRoutineEx`, logs process create/exit
-- Pushes into `event_queue.c` (v0.3)
-- `event_types.h`: `KDAMON_PROCESS_EVENT_DATA` (PID, PPID, create/exit flag, image name)
-- `log_writer.c`: `KdaMonLogWriterWriteProcessEvent`, dispatched via switch in `KdaMonLogWriterWriteEvent`
-- JSON string escaping for image path (backslashes)
-
----
-
 ## [0.6] - Image Load Callback
 Second sensor: logs every DLL/driver loaded into a process.
 
@@ -95,7 +83,7 @@ Validated against real malware samples in isolated VM and write full docs + READ
 | v0.2 | `device.c`, `ioctl.c` | Device object + IOCTL | Shipped |
 | v0.3 | `event_queue.c` | Kernel event queue | Shipped |
 | v0.4 | `log_writer.c` | Logging | Shipped |
-| v0.5 | `process_callback.c` | Process create/exit monitoring | Planned |
+| v0.5 | `process_callback.c` | Process create/exit monitoring | Shipped |
 | v0.6 | `image_callback.c` | Image/DLL load monitoring | Planned |
 | v0.7 | `wfp_session.c` | WFP session setup | Planned |
 | v0.8 | `wfp_callout.c` | Network connection monitoring | Planned |

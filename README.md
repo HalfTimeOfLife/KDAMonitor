@@ -7,7 +7,7 @@ A Windows kernel driver (in C) for logging process, image load, network connecti
 
 ## Status
 
-Early development: currently at **v0.4 (disk logging)**. No monitoring feature is implemented yet. See [ROADMAP.md](./ROADMAP.md) for planned versions.
+Early development: currently at **v0.5 (process sensor)**. First monitoring feature (process create/exit) implemented; four sensors remain planned. See [ROADMAP.md](./ROADMAP.md) for planned versions.
 
 ---
 
@@ -22,7 +22,7 @@ The intended use case is malware sandbox analysis: run a sample in an isolated V
 
 ---
 
-## Architecture (v0.4)
+## Architecture (v0.5)
 
 ![KDAMonitor architecture](docs/kdamonitor_architecture.svg)
 
@@ -48,10 +48,10 @@ KDAMonitor/
 │   ├── client.vcxproj
 │   └── client.vcxproj.filters
 ├── docs
-│   ├── kdamonitor_architecture.svg
 │   ├── dumps
 │   │   └── IRQL_NOT_LESS_OR_EQUAL.dmp
-│   └── crashes.md
+│   ├── crashes.md
+│   └── kdamonitor_architecture.svg
 ├── driver
 │   ├── include
 │   │   ├── device.h
@@ -61,13 +61,15 @@ KDAMonitor/
 │   │   ├── ioctl.h
 │   │   ├── kdamon_config.h
 │   │   ├── kdamon_shared.h
-│   │   └── log_writer.h
+│   │   ├── log_writer.h
+│   │   └── process_callback.h
 │   ├── src
 │   │   ├── device.c
 │   │   ├── driver_entry.c
 │   │   ├── event_queue.c
 │   │   ├── ioctl.c
-│   │   └── log_writer.c
+│   │   ├── log_writer.c
+│   │   └── process_callback.c
 │   ├── KDAMonitor.inf
 │   ├── KDAMonitor.vcxproj
 │   ├── KDAMonitor.vcxproj.filters
