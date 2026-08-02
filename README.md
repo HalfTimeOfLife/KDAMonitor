@@ -28,6 +28,18 @@ The intended use case is malware sandbox analysis: run a sample in an isolated V
 
 ---
 
+## Future Architecture (v1.0 target)
+
+![KDAMonitor future architecture](docs/kdamonitor_architecture_final.svg)
+
+This diagram represents the intended long-term architecture of KDAMonitor.
+
+The current implementation is at **v0.5**, where only the process monitoring sensor is implemented. The architecture shown above is a design target for the v1.0 release, including additional sensors (image load, network, registry, thread) and the usermode client.
+
+This design is not fixed and may evolve during development.
+
+---
+
 ## Requirements
 
 - Windows 10/11 (test VM recommended, test signing mode enabled)
