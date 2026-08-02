@@ -4,6 +4,7 @@
 #include "kdamon_config.h"
 #include "event_queue.h"
 #include "log_writer.h"
+#include "process_callback.h"
 
 
 PDEVICE_OBJECT g_DeviceObject = NULL;
@@ -12,6 +13,7 @@ void DriverUnload(_In_ PDRIVER_OBJECT DriverObject)
 {
 	UNREFERENCED_PARAMETER(DriverObject);
 
+	KdaMonProcessCallbackUnregister();
 	KdaMonLogWriterStop();
 	KdaMonEventQueueDestroy();
 	KdaMonDeleteDevice(g_DeviceObject);
@@ -33,30 +35,27 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 		return status;
 	}
 	
+	// --- Initialize the event queue ---
 	if (!KdaMonEventQueueInitialize())
 	{
 		KdPrint((DRIVER_TAG " [ERROR]: EventQueueInitialize failed\n"));
 		return STATUS_UNSUCCESSFUL;
 	}
+
+	// --- Start the log writer thread ---
 	if (!KdaMonLogWriterStart(DriverObject))
 	{
 		KdPrint((DRIVER_TAG " [ERROR]: KdaMonLogWriterStart failed\n"));
 		return STATUS_UNSUCCESSFUL;
 	}
 
+	// --- Register process creation callback ---
+	if (!NT_SUCCESS(KdaMonProcessCallbackRegister()))
+	{
+		KdPrint((DRIVER_TAG " [ERROR]: KdaMonProcessCallbackRegister failed\n"));
+		return STATUS_UNSUCCESSFUL;
+	}
+
 	KdPrint((DRIVER_TAG " [SUCCESS]: Initialized successfully\n"));
-
-	// --- BEGIN TEST QUEUE ---
-	KDAMON_EVENT testEvent1 = { 0 };
-	testEvent1.Type = KdaMonEventProcess;
-	KeQuerySystemTimePrecise(&testEvent1.Timestamp);
-	KdaMonEventQueuePush(&testEvent1);
-
-	KDAMON_EVENT testEvent2 = { 0 };
-	testEvent2.Type = KdaMonEventNetwork;
-	KeQuerySystemTimePrecise(&testEvent2.Timestamp);
-	KdaMonEventQueuePush(&testEvent2);
-	// --- END TEST QUEUE ---
-
 	return STATUS_SUCCESS;
 }

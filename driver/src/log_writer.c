@@ -34,6 +34,86 @@ static const char* KdaMonEventTypeToString(_In_ KDAMON_EVENT_TYPE Type)
     }
 }
 
+static BOOLEAN KdaMonJsonEscapeW(_In_ PCWSTR Source, _Out_writes_z_(DestSize) PSTR Dest, _In_ SIZE_T DestSize)
+{
+    SIZE_T Out = 0;
+
+    if (DestSize == 0)
+    {
+        return FALSE;
+    }
+
+    for (SIZE_T i = 0; Source[i] != L'\0'; i++)
+    {
+        WCHAR Ch = Source[i];
+
+        if (Ch == L'\\' || Ch == L'"')
+        {
+            if (Out + 2 >= DestSize)
+            {
+                Dest[Out] = '\0';
+                return FALSE;
+            }
+            Dest[Out++] = '\\';
+            Dest[Out++] = (CHAR)Ch;
+        }
+        else if (Ch >= 0x20 && Ch < 0x7F)
+        {
+            if (Out + 1 >= DestSize)
+            {
+                Dest[Out] = '\0';
+                return FALSE;
+            }
+            Dest[Out++] = (CHAR)Ch;
+        }
+    }
+
+    Dest[Out] = '\0';
+    return TRUE;
+}
+
+// --- Write event helpers ---
+
+static NTSTATUS KdaMonLogWriterWriteProcessEvent(_In_ const KDAMON_EVENT* Event, _Out_writes_z_(BufferSize) PSTR EventBuffer, _In_ SIZE_T BufferSize)
+{
+    CHAR EscapedImage[520];
+    CHAR PpidField[16];
+
+    if (!KdaMonJsonEscapeW(Event->Data.Process.ImageFileName, EscapedImage, sizeof(EscapedImage)))
+    {
+        KdPrint((DRIVER_TAG " [WARNING]: Image path truncated during JSON escape (event %lu)\n", Event->Id));
+    }
+
+    if (Event->Data.Process.IsCreate && Event->Data.Process.ParentProcessId != NULL)
+    {
+        RtlStringCbPrintfA(PpidField, sizeof(PpidField), "%lu",
+            (ULONG)(ULONG_PTR)Event->Data.Process.ParentProcessId);
+    }
+    else
+    {
+        RtlStringCbCopyA(PpidField, sizeof(PpidField), "null");
+    }
+
+    return RtlStringCbPrintfA(
+        EventBuffer,
+        BufferSize,
+        "{\"id\":%lu,\"type\":\"%s\",\"timestamp\":%lld,"
+        "\"pid\":%lu,\"ppid\":%s,\"is_create\":%s,\"image\":\"%s\"}\n",
+        Event->Id,
+        KdaMonEventTypeToString(Event->Type),
+        Event->Timestamp.QuadPart,
+        (ULONG)(ULONG_PTR)Event->Data.Process.ProcessId,
+        PpidField,
+        Event->Data.Process.IsCreate ? "true" : "false",
+        EscapedImage
+    );
+}
+
+// TODO: KdaMonLogWriterWriteImageEvent (v0.6)
+// TODO: KdaMonLogWriterWriteNetworkEvent (v0.8)
+// TODO: KdaMonLogWriterWriteRegistryEvent (v0.9)
+// TODO: KdaMonLogWriterWriteThreadEvent (v0.10)
+
 // --- File I/O helpers ---
 
 static NTSTATUS KdaMonLogWriterOpenFile(VOID)
@@ -185,21 +265,35 @@ static VOID KdaMonLogWriterCloseFile(VOID)
 
 static NTSTATUS KdaMonLogWriterWriteEvent(_In_ const KDAMON_EVENT* Event)
 {
-    CHAR EventBuffer[256];
+    CHAR EventBuffer[1000];
     size_t Length;
     IO_STATUS_BLOCK IoStatusBlock;
+    NTSTATUS status;
 
-    NTSTATUS status = RtlStringCbPrintfA(
-        EventBuffer,
-        sizeof(EventBuffer),
-        "{\"id\":%lu,\"type\":\"%s\",\"timestamp\":%lld}\n",
-        Event->Id,
-        KdaMonEventTypeToString(Event->Type),
-        Event->Timestamp.QuadPart
-    );
+    switch (Event->Type)
+    {
+    case KdaMonEventProcess:
+        status = KdaMonLogWriterWriteProcessEvent(Event, EventBuffer, sizeof(EventBuffer));
+        break;
+		// TODO: case KdaMonEventImageLoad: (v0.6)
+		// TODO: case KdaMonEventNetwork: (v0.8)
+		// TODO: case KdaMonEventRegistry: (v0.9)
+		// TODO: case KdaMonEventThread: (v0.10)
+
+    default:
+        status = RtlStringCbPrintfA(
+            EventBuffer,
+            sizeof(EventBuffer),
+            "{\"id\":%lu,\"type\":\"%s\",\"timestamp\":%lld}\n",
+            Event->Id,
+            KdaMonEventTypeToString(Event->Type),
+            Event->Timestamp.QuadPart
+        );
+        break;
+    }
     if (!NT_SUCCESS(status))
     {
-        KdPrint((DRIVER_TAG " [ERROR]: RtlStringCbPrintfA for log entry failed (0x%08X)\n", status));
+        KdPrint((DRIVER_TAG " [ERROR]: Event formatting failed (0x%08X)\n", status));
         return status;
     }
 
@@ -220,7 +314,6 @@ static NTSTATUS KdaMonLogWriterWriteEvent(_In_ const KDAMON_EVENT* Event)
         (ULONG)Length,
         NULL,
         NULL
-
     );
     if (!NT_SUCCESS(status))
     {

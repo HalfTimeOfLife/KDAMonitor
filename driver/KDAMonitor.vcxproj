@@ -92,6 +92,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)ntoskrnl.lib;$(DDK_LIB_PATH)hal.lib;$(DDK_LIB_PATH)wmilib.lib;$(DDK_LIB_PATH)ntstrsafe.lib</AdditionalDependencies>
+      <AdditionalOptions>/INTEGRITYCHECK %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -101,6 +102,9 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories);$(ProjectDir)include\</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalOptions>/INTEGRITYCHECK %(AdditionalOptions)</AdditionalOptions>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Inf Include="KDAMonitor.inf" />
@@ -114,6 +118,7 @@
     <ClCompile Include="src\event_queue.c" />
     <ClCompile Include="src\ioctl.c" />
     <ClCompile Include="src\log_writer.c" />
+    <ClCompile Include="src\process_callback.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\device.h" />
@@ -124,6 +129,7 @@
     <ClInclude Include="include\kdamon_config.h" />
     <ClInclude Include="include\kdamon_shared.h" />
     <ClInclude Include="include\log_writer.h" />
+    <ClInclude Include="include\process_callback.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
