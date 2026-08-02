@@ -4,6 +4,18 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.6] - 2026-08-03
+
+Second sensor: every image (DLL/EXE) loaded into any process is captured via `PsSetLoadImageNotifyRoutine`, pushed into the existing queue, and written to the log through the standard pipeline.
+
+### Added
+- `image_callback.c`/`.h`: `PsSetLoadImageNotifyRoutine` callback, captures image base, size, properties, system/mapped/partial-map flags, signature level/type, and full image path
+- Registered/unregistered in `DriverEntry`/`DriverUnload`, after the process callback (unregistered first, symmetric teardown order)
+- `event_types.h`: `KDAMON_IMAGE_LOAD_EVENT_DATA` (PID, image base/size, properties, three BOOLEAN-as-ULONG flags, signature level/type, fixed-size image name)
+- `log_writer.c`: `KdaMonLogWriterWriteImageEvent`, dispatched via switch in `KdaMonLogWriterWriteEvent`
+
+----
+
 ## [0.5] - 2026-08-02
 
 First sensor: every time a process starts or exits, an event is pushed into the queue built in v0.3, and written to the log through the standard pipeline.

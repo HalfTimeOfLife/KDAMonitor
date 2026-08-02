@@ -27,7 +27,7 @@ style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
       font-size="22"
       font-weight="600"
       fill="#212121">
-KDAMonitor v0.5 Architecture
+KDAMonitor v0.6 Architecture
 </text>
 
 
@@ -111,15 +111,15 @@ IOCTL interface
 
 
 <!-- Callbacks -->
-<rect x="520" y="240"
+<rect x="520" y="215"
       width="230"
-      height="80"
+      height="105"
       rx="10"
       fill="#fff8e1"
       stroke="#f9a825"
       stroke-width="1.5"/>
 
-<text x="635" y="270"
+<text x="635" y="245"
       text-anchor="middle"
       font-size="15"
       font-weight="600"
@@ -127,11 +127,18 @@ IOCTL interface
 Kernel Callbacks
 </text>
 
-<text x="635" y="295"
+<text x="635" y="270"
       text-anchor="middle"
       font-size="12"
       fill="#f57f17">
 Process monitoring ✓
+</text>
+
+<text x="635" y="295"
+      text-anchor="middle"
+      font-size="12"
+      fill="#f57f17">
+Image monitoring ✓
 </text>
 
 

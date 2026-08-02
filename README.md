@@ -7,7 +7,7 @@ A Windows kernel driver (in C) for logging process, image load, network connecti
 
 ## Status
 
-Early development: currently at **v0.5 (process sensor)**. First monitoring feature (process create/exit) implemented; four sensors remain planned. See [ROADMAP.md](./ROADMAP.md) for planned versions.
+Early development: currently at **v0.6 (image load sensor)**. Process and image load monitoring implemented; three sensors remain planned. See [ROADMAP.md](./ROADMAP.md) for planned versions.
 
 ---
 
@@ -48,7 +48,7 @@ This design is not fixed and may evolve during development.
 
 ---
 
-## Project structure (v0.4)
+## Project structure (v0.6)
 
 ```bash
 KDAMonitor/
@@ -63,13 +63,15 @@ KDAMonitor/
 │   ├── dumps
 │   │   └── IRQL_NOT_LESS_OR_EQUAL.dmp
 │   ├── crashes.md
-│   └── kdamonitor_architecture.svg
+│   ├── kdamonitor_architecture.svg
+│   └── kdamonitor_architecture_final.svg
 ├── driver
 │   ├── include
 │   │   ├── device.h
 │   │   ├── driver.h
 │   │   ├── event_queue.h
 │   │   ├── event_types.h
+│   │   ├── image_callback.h
 │   │   ├── ioctl.h
 │   │   ├── kdamon_config.h
 │   │   ├── kdamon_shared.h
@@ -79,6 +81,7 @@ KDAMonitor/
 │   │   ├── device.c
 │   │   ├── driver_entry.c
 │   │   ├── event_queue.c
+│   │   ├── image_callback.c
 │   │   ├── ioctl.c
 │   │   ├── log_writer.c
 │   │   └── process_callback.c

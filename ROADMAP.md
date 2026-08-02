@@ -4,15 +4,6 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
-## [0.6] - Image Load Callback
-Second sensor: logs every DLL/driver loaded into a process.
-
-### Added
-- `image_callback.c`: `PsSetLoadImageNotifyRoutine`, logs DLL/driver loads
-- `log_writer.c`: dedicated write function, `KdaMonLogWriterWriteImageEvent`, for image load events, per established pattern
-
----
-
 ## [0.7] - WFP Session
 Sets up WFP needed for network monitoring.
 
@@ -84,7 +75,7 @@ Validated against real malware samples in isolated VM and write full docs + READ
 | v0.3 | `event_queue.c` | Kernel event queue | Shipped |
 | v0.4 | `log_writer.c` | Logging | Shipped |
 | v0.5 | `process_callback.c` | Process create/exit monitoring | Shipped |
-| v0.6 | `image_callback.c` | Image/DLL load monitoring | Planned |
+| v0.6 | `image_callback.c` | Image/DLL load monitoring | Shipped |
 | v0.7 | `wfp_session.c` | WFP session setup | Planned |
 | v0.8 | `wfp_callout.c` | Network connection monitoring | Planned |
 | v0.9 | `registry_callback.c` | Registry activity monitoring | Planned |
