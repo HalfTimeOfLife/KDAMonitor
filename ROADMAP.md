@@ -41,20 +41,21 @@ Last sensor: capture thread create/exit events.
 
 ---
 
-## [0.11] - Usermode Client
+## [0.11] - Structural Refactor
+Refactoring, now that all sensors are in place.
+
+### Added
+- Moves `*_callback.c` files into `driver/src/callbacks/`
+- Moves `wfp_*.c` files into `driver/src/network/`
+
+---
+
+## [0.12] - Usermode Client
 A way to see events live in a terminal instead of only reading the log file afterward.
 
 ### Added
 - `client/src/main.c`, `event_reader.c`: connects/disconnects to device at will, no data loss
 - Real-time console display of incoming events
-
----
-
-## [0.12] - Structural Refactor
-Refactoring.
-### Added
-- Moves `*_callback.c` files into `driver/src/callbacks/`
-- Moves `wfp_*.c` files into `driver/src/network/`
 
 ---
 
@@ -80,6 +81,6 @@ Validated against real malware samples in isolated VM and write full docs + READ
 | v0.8 | `wfp_callout.c` | Network connection monitoring | Planned |
 | v0.9 | `registry_callback.c` | Registry activity monitoring | Planned |
 | v0.10 | `thread_callback.c` | Thread create/exit monitoring | Planned |
-| v0.11 | `client/` | Usermode client | Planned |
-| v0.12 | Refactor | Structural cleanup | Planned |
+| v0.11 | Refactor | Structural cleanup | Planned |
+| v0.12 | `client/` | Usermode client | Planned |
 | v1.0 | Consolidation | Stabilization + release | Planned |
