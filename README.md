@@ -7,7 +7,7 @@ A Windows kernel driver (in C) for logging process, image load, network connecti
 
 ## Status
 
-Early development: currently at **v0.6 (image load sensor)**. Process and image load monitoring implemented; three sensors remain planned. See [ROADMAP.md](./ROADMAP.md) for planned versions.
+Early development: currently at **v0.7 (WFP session setup)**. Process and image load monitoring implemented; WFP engine session (provider/sublayer) is up but not yet filtering traffic. See [ROADMAP.md](./ROADMAP.md) for planned versions.
 
 ---
 
@@ -22,7 +22,7 @@ The intended use case is malware sandbox analysis: run a sample in an isolated V
 
 ---
 
-## Architecture (v0.5)
+## Architecture (v0.7)
 
 ![KDAMonitor architecture](docs/kdamonitor_architecture.svg)
 
@@ -34,7 +34,7 @@ The intended use case is malware sandbox analysis: run a sample in an isolated V
 
 This diagram represents the intended long-term architecture of KDAMonitor.
 
-The current implementation is at **v0.5**, where only the process monitoring sensor is implemented. The architecture shown above is a design target for the v1.0 release, including additional sensors (image load, network, registry, thread) and the usermode client.
+The current implementation is at **v0.7**, where process monitoring, image load monitoring, and WFP session setup are implemented. The architecture shown above is a design target for the v1.0 release, including the network callout, registry and thread sensors, and the usermode client.
 
 This design is not fixed and may evolve during development.
 
@@ -48,7 +48,7 @@ This design is not fixed and may evolve during development.
 
 ---
 
-## Project structure (v0.6)
+## Project structure (v0.7)
 
 ```bash
 KDAMonitor/
@@ -60,8 +60,7 @@ KDAMonitor/
 │   ├── client.vcxproj
 │   └── client.vcxproj.filters
 ├── docs
-│   ├── dumps
-│   │   └── IRQL_NOT_LESS_OR_EQUAL.dmp
+│   ├── dumps/
 │   ├── crashes.md
 │   ├── kdamonitor_architecture.svg
 │   └── kdamonitor_architecture_final.svg
@@ -76,7 +75,8 @@ KDAMonitor/
 │   │   ├── kdamon_config.h
 │   │   ├── kdamon_shared.h
 │   │   ├── log_writer.h
-│   │   └── process_callback.h
+│   │   ├── process_callback.h
+│   │   └── wfp_session.h
 │   ├── src
 │   │   ├── device.c
 │   │   ├── driver_entry.c
@@ -84,7 +84,8 @@ KDAMonitor/
 │   │   ├── image_callback.c
 │   │   ├── ioctl.c
 │   │   ├── log_writer.c
-│   │   └── process_callback.c
+│   │   ├── process_callback.c
+│   │   └── wfp_session.c
 │   ├── KDAMonitor.inf
 │   ├── KDAMonitor.vcxproj
 │   ├── KDAMonitor.vcxproj.filters
@@ -117,12 +118,10 @@ Reboot for this to take effect.
 
 ### Loading the driver
 
-From an elevated command prompt on the test VM:
+From an elevated command prompt on the test VM, pointing `binPath=` at wherever `KDAMonitor.sys` was copied (no fixed location required):
 
 ```bash
-mkdir C:\Drivers
-copy <path-to>\KDAMonitor.sys C:\Drivers
-sc create KDAMonitor type= kernel binPath= C:\Drivers\KDAMonitor.sys
+sc create KDAMonitor type= kernel binPath= "C:\path\to\KDAMonitor.sys"
 sc start KDAMonitor
 ```
 

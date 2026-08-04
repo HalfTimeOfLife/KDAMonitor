@@ -4,6 +4,28 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.7] - 2026-08-04
+
+WFP session infrastructure: opens the WFP engine and registers the provider/sublayer that future network callouts (v0.8) will attach to.
+
+### Added
+- `wfp_session.c`/`.h`: `KdaMonWfpSessionInit`/`KdaMonWfpSessionCleanup`, opens a WFP engine session, registers `KDAMonitor Provider` and `KDAMonitor Sublayer` with dedicated GUIDs
+- Registered early in `DriverEntry` (right after device creation, before the event queue), consistent with treating the WFP session as infrastructure rather than an event producer
+
+### Changed
+- `driver_entry.c`: reordered `DriverEntry`/`DriverUnload` so `KdaMonWfpSessionInit`/`Cleanup` bracket the rest of the pipeline (Device -> WFP -> Queue -> LogWriter -> ProcessCallback -> ImageCallback, mirrored exactly on teardown), keeping the invariant that all event producers (callbacks) are unregistered before the log writer and event queue are torn down
+- `driver_entry.c`: corrected two `goto` cleanup targets in the `DriverEntry` failure cascade that pointed to the wrong label (one leaked the WFP session on event queue init failure, one skipped log writer thread shutdown on process callback registration failure)
+
+### Fixed
+- `driver/KDAMonitor.vcxproj`: `Release|x64` was missing `AdditionalDependencies` (including `fwpkclnt.lib`, needed by `wfp_session.c`), which would have failed to link on Release builds
+- `device.h`/`driver.h`: harmonized the `ntstatus.h`/`ntddk.h`/`WIN32_NO_STATUS` include pattern (already applied elsewhere since v0.4) to remove an include-order dependency
+- `KDAMonitor.sln`/`.vcxproj`: removed unused ARM64 configurations (x64-only target)
+
+### Notes
+- Validated on Windows test VM: load/unload cycle confirmed via `netsh wfp show state`: `KDAMonitor Provider`/`KDAMonitor Sublayer` absent before load, present after load, absent again after unload
+
+---
+
 ## [0.6] - 2026-08-03
 
 Second sensor: every image (DLL/EXE) loaded into any process is captured via `PsSetLoadImageNotifyRoutine`, pushed into the existing queue, and written to the log through the standard pipeline.
