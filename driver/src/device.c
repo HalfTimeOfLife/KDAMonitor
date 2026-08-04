@@ -38,15 +38,16 @@ NTSTATUS KdaMonCreateDevice(_In_ PDRIVER_OBJECT DriverObject, _Outptr_ PDEVICE_O
 	return STATUS_SUCCESS;
 }
 
-void KdaMonDeleteDevice(_In_opt_ PDEVICE_OBJECT DeviceObject)
+void KdaMonDeleteDevice(_Inout_ PDEVICE_OBJECT* DeviceObject)
 {
 	UNICODE_STRING symLink = RTL_CONSTANT_STRING(KDAMON_SYMLINK_NAME);
 
 	IoDeleteSymbolicLink(&symLink);
 
-	if (DeviceObject != NULL)
+	if (*DeviceObject != NULL)
 	{
-		IoDeleteDevice(DeviceObject);
+		IoDeleteDevice(*DeviceObject);
+		*DeviceObject = NULL;
 	}
 
 	KdPrint((DRIVER_TAG " [SUCCESS]: Device object and symbolic link deleted\n"));

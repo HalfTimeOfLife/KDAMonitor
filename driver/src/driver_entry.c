@@ -6,6 +6,7 @@
 #include "log_writer.h"
 #include "process_callback.h"
 #include "image_callback.h"
+#include "wfp_session.h"
 
 
 PDEVICE_OBJECT g_DeviceObject = NULL;
@@ -14,57 +15,90 @@ void DriverUnload(_In_ PDRIVER_OBJECT DriverObject)
 {
 	UNREFERENCED_PARAMETER(DriverObject);
 
+	KdPrint((DRIVER_TAG " [INFO]: Driver Unload begin\n"));
 	KdaMonImageCallbackUnregister();
 	KdaMonProcessCallbackUnregister();
+
 	KdaMonLogWriterStop();
+
 	KdaMonEventQueueDestroy();
-	KdaMonDeleteDevice(g_DeviceObject);
-	KdPrint((DRIVER_TAG " [SUCCESS]: Driver Unload called\n"));
+	KdaMonWfpSessionCleanup();
+
+	KdaMonDeleteDevice(&g_DeviceObject);
+	KdPrint((DRIVER_TAG " [INFO]: Driver Unload complete\n"));
 }
 
 NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
 {
 	UNREFERENCED_PARAMETER(RegistryPath);
 
+	KdPrint((DRIVER_TAG " [INFO]: DriverEntry begin\n"));
+	NTSTATUS status;
+
 	DriverObject->DriverUnload = DriverUnload;
 	DriverObject->MajorFunction[IRP_MJ_CREATE] = KdaMonCreateClose;
 	DriverObject->MajorFunction[IRP_MJ_CLOSE] = KdaMonCreateClose;
 	DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = KdaMonDeviceControl;
 
-	NTSTATUS status = KdaMonCreateDevice(DriverObject, &g_DeviceObject);
+	status = KdaMonCreateDevice(DriverObject, &g_DeviceObject);
 	if (!NT_SUCCESS(status))
 	{
-		return status;
+		goto cleanup_none;
 	}
 	
 	// --- Initialize the event queue ---
 	if (!KdaMonEventQueueInitialize())
 	{
 		KdPrint((DRIVER_TAG " [ERROR]: EventQueueInitialize failed\n"));
-		return STATUS_UNSUCCESSFUL;
+		status = STATUS_UNSUCCESSFUL;
+		goto cleanup_device;
 	}
 
 	// --- Start the log writer thread ---
 	if (!KdaMonLogWriterStart(DriverObject))
 	{
 		KdPrint((DRIVER_TAG " [ERROR]: KdaMonLogWriterStart failed\n"));
-		return STATUS_UNSUCCESSFUL;
+		status = STATUS_UNSUCCESSFUL;
+		goto cleanup_queue;
+	}
+
+	// --- Initialize WFP session ---
+	status = KdaMonWfpSessionInit();
+	if (!NT_SUCCESS(status))
+	{
+		KdPrint((DRIVER_TAG " [ERROR]: KdaMonWfpSessionInit failed\n"));
+		goto cleanup_logwriter;
 	}
 
 	// --- Register process creation callback ---
-	if (!NT_SUCCESS(KdaMonProcessCallbackRegister()))
+	status = KdaMonProcessCallbackRegister();
+	if (!NT_SUCCESS(status))
 	{
 		KdPrint((DRIVER_TAG " [ERROR]: KdaMonProcessCallbackRegister failed\n"));
-		return STATUS_UNSUCCESSFUL;
+		goto cleanup_wfp;
 	}
 
 	// --- Register image load callback ---
-	if (!NT_SUCCESS(KdaMonImageCallbackRegister()))
+	status = KdaMonImageCallbackRegister();
+	if (!NT_SUCCESS(status))
 	{
 		KdPrint((DRIVER_TAG " [ERROR]: KdaMonImageCallbackRegister failed\n"));
-		return STATUS_UNSUCCESSFUL;
+		goto cleanup_process;
 	}
 
 	KdPrint((DRIVER_TAG " [SUCCESS]: Initialized successfully\n"));
 	return STATUS_SUCCESS;
+
+cleanup_process:
+	KdaMonProcessCallbackUnregister();
+cleanup_wfp:
+	KdaMonWfpSessionCleanup();
+cleanup_logwriter:
+	KdaMonLogWriterStop();
+cleanup_queue:
+	KdaMonEventQueueDestroy();
+cleanup_device:
+	KdaMonDeleteDevice(&g_DeviceObject);
+cleanup_none:
+	return status;
 }

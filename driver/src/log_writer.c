@@ -401,6 +401,8 @@ BOOLEAN KdaMonLogWriterStart(_In_ PDRIVER_OBJECT DriverObject)
     if (!NT_SUCCESS(status))
     {
         KdPrint((DRIVER_TAG " [ERROR]: ObReferenceObjectByHandle failed (0x%08X)\n", status));
+        ZwClose(threadHandle);
+        KdaMonLogWriterCloseFile();
         return FALSE;
     }
 

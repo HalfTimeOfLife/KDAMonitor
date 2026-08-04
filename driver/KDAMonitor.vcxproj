@@ -91,7 +91,7 @@
       <AdditionalIncludeDirectories>$(VC_IncludePath); $(WindowsSDK_IncludePath); $(ProjectDir)include;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)ntoskrnl.lib;$(DDK_LIB_PATH)hal.lib;$(DDK_LIB_PATH)wmilib.lib;$(DDK_LIB_PATH)ntstrsafe.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)ntoskrnl.lib;$(DDK_LIB_PATH)hal.lib;$(DDK_LIB_PATH)wmilib.lib;$(DDK_LIB_PATH)ntstrsafe.lib;$(DDK_LIB_PATH)fwpkclnt.lib;$(DDK_LIB_PATH)ndis.lib</AdditionalDependencies>
       <AdditionalOptions>/INTEGRITYCHECK %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -120,6 +120,7 @@
     <ClCompile Include="src\ioctl.c" />
     <ClCompile Include="src\log_writer.c" />
     <ClCompile Include="src\process_callback.c" />
+    <ClCompile Include="src\wfp_session.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\device.h" />
@@ -132,6 +133,7 @@
     <ClInclude Include="include\kdamon_shared.h" />
     <ClInclude Include="include\log_writer.h" />
     <ClInclude Include="include\process_callback.h" />
+    <ClInclude Include="include\wfp_session.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
