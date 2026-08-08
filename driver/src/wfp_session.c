@@ -1,15 +1,5 @@
-#define INITGUID
-
 #include "wfp_session.h"
 #include "kdamon_config.h"
-
-DEFINE_GUID(KDAMON_WFP_PROVIDER_GUID,
-    0x16821234, 0xd300, 0x42f1,
-    0xbc, 0xe8, 0xd2, 0x23, 0x1a, 0xf3, 0x25, 0xc3);
-
-DEFINE_GUID(KDAMON_WFP_SUBLAYER_GUID,
-    0xa141444c, 0x7f15, 0x4a05,
-    0xa2, 0x95, 0x07, 0xca, 0x38, 0xc2, 0x3c, 0xb1);
 
 #define KDAMON_WFP_PROVIDER_NAME    L"KDAMonitor Provider"
 #define KDAMON_WFP_PROVIDER_DESCRIPTION L"KDAMonitor - Kernel Driver Activity Monitor"
@@ -17,7 +7,7 @@ DEFINE_GUID(KDAMON_WFP_SUBLAYER_GUID,
 #define KDAMON_WFP_SUBLAYER_NAME    L"KDAMonitor Sublayer"
 #define KDAMON_WFP_SUBLAYER_DESCRIPTION L"KDAMonitor sublayer for network event monitoring"
 
-static HANDLE g_EngineHandle = NULL;
+HANDLE g_EngineHandle = NULL;
 
 NTSTATUS KdaMonWfpSessionInit(void)
 {
@@ -33,7 +23,7 @@ NTSTATUS KdaMonWfpSessionInit(void)
 		return STATUS_UNSUCCESSFUL;
 	}
 
-	provider.providerKey = KDAMON_WFP_PROVIDER_GUID;
+	RtlCopyMemory(&provider.providerKey, &KDAMON_WFP_PROVIDER_GUID, sizeof(GUID));
 	provider.displayData.name = KDAMON_WFP_PROVIDER_NAME;
 	provider.displayData.description = KDAMON_WFP_PROVIDER_DESCRIPTION;
 	provider.flags = 0;
@@ -47,13 +37,13 @@ NTSTATUS KdaMonWfpSessionInit(void)
 		return STATUS_UNSUCCESSFUL;
 	}
 
-	subLayer.subLayerKey = KDAMON_WFP_SUBLAYER_GUID;
+	RtlCopyMemory(&subLayer.subLayerKey, &KDAMON_WFP_SUBLAYER_GUID, sizeof(GUID));
 	GUID providerKey = KDAMON_WFP_PROVIDER_GUID;
 	subLayer.providerKey = &providerKey;
 	subLayer.displayData.name = KDAMON_WFP_SUBLAYER_NAME;
 	subLayer.displayData.description = KDAMON_WFP_SUBLAYER_DESCRIPTION;
 	subLayer.flags = 0;
-	subLayer.weight = (UINT16)0;
+	subLayer.weight = (UINT16)0xFFFF;
 	status = FwpmSubLayerAdd(g_EngineHandle, &subLayer, NULL);
 	if (status != STATUS_SUCCESS)
 	{

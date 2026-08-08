@@ -7,6 +7,7 @@
 #include "process_callback.h"
 #include "image_callback.h"
 #include "wfp_session.h"
+#include "wfp_callout.h"
 
 
 PDEVICE_OBJECT g_DeviceObject = NULL;
@@ -26,6 +27,9 @@ void DriverUnload(_In_ PDRIVER_OBJECT DriverObject)
 
 	// --- Destroy the event queue ---
 	KdaMonEventQueueDestroy();
+
+	// --- Cleanup WFP callout ---
+	KdaMonWfpCalloutUnregister();
 
 	// --- Cleanup WFP session ---
 	KdaMonWfpSessionCleanup();
@@ -61,13 +65,20 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 		KdPrint((DRIVER_TAG " [ERROR]: KdaMonWfpSessionInit failed\n"));
 		goto cleanup_device;
 	}
+
+	status = KdaMonWfpCalloutRegister(g_DeviceObject);
+	if (!NT_SUCCESS(status))
+	{
+		KdPrint((DRIVER_TAG " [ERROR]: KdaMonWfpCalloutRegister failed\n"));
+		goto cleanup_wfp;
+	}
 	
 	// --- Initialize the event queue ---
 	if (!KdaMonEventQueueInitialize())
 	{
 		KdPrint((DRIVER_TAG " [ERROR]: EventQueueInitialize failed\n"));
 		status = STATUS_UNSUCCESSFUL;
-		goto cleanup_wfp;
+		goto cleanup_callout;
 	}
 
 	// --- Start the log writer thread ---
@@ -94,7 +105,7 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 		goto cleanup_process;
 	}
 
-	KdPrint((DRIVER_TAG " [SUCCESS]: Initialized successfully\n"));
+	KdPrint((DRIVER_TAG " [INFO]: Initialized successfully\n"));
 	return STATUS_SUCCESS;
 
 cleanup_process:
@@ -103,6 +114,8 @@ cleanup_logwriter:
 	KdaMonLogWriterStop();
 cleanup_queue:
 	KdaMonEventQueueDestroy();
+cleanup_callout:
+	KdaMonWfpCalloutUnregister();
 cleanup_wfp:
 	KdaMonWfpSessionCleanup();
 cleanup_device:
