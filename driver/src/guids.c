@@ -1,0 +1,32 @@
+#define INITGUID
+#include <guiddef.h>
+#include <ntddk.h>
+
+#define NDIS630
+#include <ndis.h>
+
+#include <fwpmk.h>
+
+// --- Session GUIDs ---
+
+// {16821234-D300-42F1-BCE8-D2231AF325C3}
+DEFINE_GUID(KDAMON_WFP_PROVIDER_GUID,
+    0x16821234, 0xd300, 0x42f1,
+    0xbc, 0xe8, 0xd2, 0x23, 0x1a, 0xf3, 0x25, 0xc3);
+
+// {A141444C-7F15-4A05-A295-07CA38C23CB1}
+DEFINE_GUID(KDAMON_WFP_SUBLAYER_GUID,
+    0xa141444c, 0x7f15, 0x4a05,
+    0xa2, 0x95, 0x07, 0xca, 0x38, 0xc2, 0x3c, 0xb1);
+
+// --- Callout GUIDs ---
+
+// {E76775DA-BC7F-426F-A3A1-B62F96CB8A5E}
+DEFINE_GUID(KDAMON_WFP_CALLOUT_OUTBOUND_GUID,
+    0xe76775da, 0xbc7f, 0x426f,
+    0xa3, 0xa1, 0xb6, 0x2f, 0x96, 0xcb, 0x8a, 0x5e);
+
+// {BE04E398-3E57-4CDB-8F2C-CAB7D3303008}
+DEFINE_GUID(KDAMON_WFP_CALLOUT_INBOUND_GUID,
+    0xbe04e398, 0x3e57, 0x4cdb,
+    0x8f, 0x2c, 0xca, 0xb7, 0xd3, 0x30, 0x30, 0x08);
