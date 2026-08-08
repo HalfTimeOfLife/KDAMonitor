@@ -139,7 +139,58 @@ static NTSTATUS KdaMonLogWriterWriteImageEvent(_In_ const KDAMON_EVENT* Event, _
 	);
 }
 
-// TODO: KdaMonLogWriterWriteNetworkEvent (v0.8)
+static NTSTATUS KdaMonLogWriterWriteNetworkEvent(
+    _In_                            const KDAMON_EVENT* Event,
+    _Out_writes_z_(BufferSize) PSTR EventBuffer,
+    _In_                            SIZE_T              BufferSize)
+{
+    CHAR EscapedPath[520];
+    ULONG localIp = Event->Data.Network.LocalIp;
+    ULONG remoteIp = Event->Data.Network.RemoteIp;
+
+    if (!KdaMonJsonEscapeW(Event->Data.Network.ProcessPath, EscapedPath, sizeof(EscapedPath)))
+    {
+        KdPrint((DRIVER_TAG " [WARNING]: Process path truncated during JSON escape (event %lu)\n", Event->Id));
+    }
+
+    const char* direction = (Event->Data.Network.Direction == KDAMON_NETWORK_DIRECTION_OUTBOUND)
+        ? "outbound"
+        : "inbound";
+
+    const char* protocol;
+    switch (Event->Data.Network.Protocol)
+    {
+    case 1:  protocol = "ICMP"; break;
+    case 6:  protocol = "TCP";  break;
+    case 17: protocol = "UDP";  break;
+    default: protocol = "UNKNOWN"; break;
+    }
+
+    return RtlStringCbPrintfA(
+        EventBuffer,
+        BufferSize,
+        "{\"id\":%lu,\"type\":\"%s\",\"timestamp\":%lld,"
+        "\"pid\":%lu,\"process\":\"%s\","
+        "\"direction\":\"%s\",\"protocol\":\"%s\","
+        "\"local_ip\":\"%u.%u.%u.%u\",\"local_port\":%u,"
+        "\"remote_ip\":\"%u.%u.%u.%u\",\"remote_port\":%u}\n",
+        Event->Id,
+        KdaMonEventTypeToString(Event->Type),
+        Event->Timestamp.QuadPart,
+        Event->Data.Network.ProcessId,
+        EscapedPath,
+        direction,
+        protocol,
+        (localIp >> 24) & 0xFF, (localIp >> 16) & 0xFF,
+        (localIp >> 8) & 0xFF, localIp & 0xFF,
+        Event->Data.Network.LocalPort,
+        (remoteIp >> 24) & 0xFF, (remoteIp >> 16) & 0xFF,
+        (remoteIp >> 8) & 0xFF, remoteIp & 0xFF,
+        Event->Data.Network.RemotePort
+    );
+}
+
+
 // TODO: KdaMonLogWriterWriteRegistryEvent (v0.9)
 // TODO: KdaMonLogWriterWriteThreadEvent (v0.10)
 
@@ -307,7 +358,10 @@ static NTSTATUS KdaMonLogWriterWriteEvent(_In_ const KDAMON_EVENT* Event)
 	case KdaMonEventImageLoad:
 		status = KdaMonLogWriterWriteImageEvent(Event, EventBuffer, sizeof(EventBuffer));
 		break;
-		// TODO: case KdaMonEventNetwork: (v0.8)
+    case KdaMonEventNetwork:
+        status = KdaMonLogWriterWriteNetworkEvent(Event, EventBuffer, sizeof(EventBuffer));
+        break;
+
 		// TODO: case KdaMonEventRegistry: (v0.9)
 		// TODO: case KdaMonEventThread: (v0.10)
 
