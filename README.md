@@ -22,7 +22,7 @@ The intended use case is malware sandbox analysis: run a sample in an isolated V
 
 ---
 
-## Architecture (v0.7)
+## Architecture (v0.8)
 
 ![KDAMonitor architecture](docs/kdamonitor_architecture.svg)
 
