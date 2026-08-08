@@ -4,6 +4,30 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.8] - 2026-08-09
+
+Third sensor: outbound and inbound network connections captured via WFP callouts on the ALE layers, using the provider/sublayer infrastructure from v0.7.
+
+### Added
+- `guids.c`: centralized `DEFINE_GUID` declarations (session + callout GUIDs), replacing the inline `DEFINE_GUID`/`INITGUID` previously in `wfp_session.c`
+- `wfp_callout.c`/`.h`: `KdaMonWfpCalloutRegister`/`KdaMonWfpCalloutUnregister`, registers two callouts (`KDAMonitor Callout Outbound`/`Inbound`) on `FWPM_LAYER_ALE_AUTH_CONNECT_V4` and `FWPM_LAYER_ALE_AUTH_RECV_ACCEPT_V4`, each with an associated `FwpmFilterAdd`
+- `event_types.h`: `KDAMON_NETWORK_EVENT_DATA` (PID, process path, protocol, local/remote IP and port as `ULONG`/`USHORT`, direction), `KDAMON_NETWORK_DIRECTION` enum
+- `log_writer.c`: `KdaMonLogWriterWriteNetworkEvent`, dispatched via switch in `KdaMonLogWriterWriteEvent`, per established pattern
+- Registered/unregistered in `DriverEntry`/`DriverUnload`, right after the event queue init/before teardown, consistent with all event producers being torn down before the queue and log writer
+
+### Changed
+- `wfp_session.c`: `g_EngineHandle` no longer `static`, exposed via `wfp_session.h` so `wfp_callout.c` can reuse the same WFP session handle
+- `wfp_session.c`: `subLayer.weight` changed from `0` to `0xFFFF` (highest priority) so the KDAMonitor sublayer's filters are evaluated first among sublayers
+
+
+### Notes
+- Validated on Windows test VM: `netsh wfp show state`/`show filters` confirm provider, sublayer, both callouts, and both filters registered on load, absent on unload
+
+### Known limitations
+- IPv6 is not covered: only `FWPM_LAYER_ALE_AUTH_CONNECT_V4`/`RECV_ACCEPT_V4` are registered, and `KDAMON_NETWORK_EVENT_DATA.LocalIp`/`RemoteIp` are `ULONG` (32-bit), which cannot represent an IPv6 address.
+
+---
+
 ## [0.7] - 2026-08-04
 
 WFP session infrastructure: opens the WFP engine and registers the provider/sublayer that future network callouts (v0.8) will attach to.

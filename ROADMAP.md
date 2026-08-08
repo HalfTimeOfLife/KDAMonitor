@@ -4,16 +4,6 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
-## [0.8] - Network Callout
-Third sensor: logs connections (PID, IP/port, protocol).
-
-### Added
-- `wfp_callout.c`: notification-only outbound connection logging
-- Captures PID, IP/port, protocol
-- `log_writer.c`: dedicated write function, `KdaMonLogWriterWriteNetworkEvent`, for network events, per established pattern
-
----
-
 ## [0.9] - Registry Callback
 Fourth sensor: logs registry activity.
 
@@ -69,7 +59,7 @@ Validated against real malware samples in isolated VM and write full docs + READ
 | v0.5 | `process_callback.c` | Process create/exit monitoring | Shipped |
 | v0.6 | `image_callback.c` | Image/DLL load monitoring | Shipped |
 | v0.7 | `wfp_session.c` | WFP session setup | Shipped |
-| v0.8 | `wfp_callout.c` | Network connection monitoring | Planned |
+| v0.8 | `wfp_callout.c` | Network connection monitoring | Shipped |
 | v0.9 | `registry_callback.c` | Registry activity monitoring | Planned |
 | v0.10 | `thread_callback.c` | Thread create/exit monitoring | Planned |
 | v0.11 | Refactor | Structural cleanup | Planned |

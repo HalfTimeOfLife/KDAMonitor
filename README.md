@@ -7,7 +7,7 @@ A Windows kernel driver (in C) for logging process, image load, network connecti
 
 ## Status
 
-Early development: currently at **v0.7 (WFP session setup)**. Process and image load monitoring implemented; WFP engine session (provider/sublayer) is up but not yet filtering traffic. See [ROADMAP.md](./ROADMAP.md) for planned versions.
+Under development: currently at **v0.8 (Network connection monitoring)**. Process, image load, and outbound/inbound IPv4 network connections are monitored and logged in real time; IPv6 not yet covered. See [ROADMAP.md](./ROADMAP.md) for planned versions.
 
 ---
 
@@ -48,7 +48,7 @@ This design is not fixed and may evolve during development.
 
 ---
 
-## Project structure (v0.7)
+## Project structure (v0.8)
 
 ```bash
 KDAMonitor/
@@ -76,15 +76,18 @@ KDAMonitor/
 │   │   ├── kdamon_shared.h
 │   │   ├── log_writer.h
 │   │   ├── process_callback.h
+│   │   ├── wfp_callout.h
 │   │   └── wfp_session.h
 │   ├── src
 │   │   ├── device.c
 │   │   ├── driver_entry.c
 │   │   ├── event_queue.c
+│   │   ├── guids.c
 │   │   ├── image_callback.c
 │   │   ├── ioctl.c
 │   │   ├── log_writer.c
 │   │   ├── process_callback.c
+│   │   ├── wfp_callout.c
 │   │   └── wfp_session.c
 │   ├── KDAMonitor.inf
 │   ├── KDAMonitor.vcxproj
