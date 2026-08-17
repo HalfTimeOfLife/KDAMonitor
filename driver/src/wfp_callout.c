@@ -42,7 +42,7 @@ static VOID KdaMonWfpClassifyCommon(
     KeQuerySystemTimePrecise(&Event.Timestamp);
 
     // --- PID ---
-    Event.Data.Network.ProcessId = (ULONG)inMetaValues->processId;
+    Event.Data.Network.ProcessId = (HANDLE)inMetaValues->processId;
 
     // --- Process path ---
     if (inMetaValues->processPath &&
