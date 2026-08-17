@@ -4,6 +4,30 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.9] - 2026-08-17
+
+Fourth sensor: registry activity (create/set/delete value, key creation) captured via `CmRegisterCallbackEx`, following the same push-to-queue/dedicated-writer pipeline as the other sensors.
+
+### Added
+- `registry_callback.c`/`.h`: `KdaMonRegistryCallbackRegister`/`KdaMonRegistryCallbackUnregister`, registers a single registry callback at altitude `KDAMON_REG_ALTITUDE` (`360000`), dispatching on `REG_NOTIFY_CLASS` to three handlers: `RegNtPreSetValueKey`, `RegNtPreDeleteValueKey`, `RegNtPostCreateKeyEx`
+- `event_types.h`: `KDAMON_REGISTRY_EVENT_DATA` (PID as `HANDLE`, process path, action, key path, value name, value type, raw value data with size, `NTSTATUS` status), `KDAMON_REGISTRY_ACTION` enum (`SET_VALUE`/`DELETE_VALUE`/`CREATE_KEY`)
+- Key path resolution via `CmCallbackGetKeyObjectIDEx`, process path resolution via `SeLocateProcessImageName`
+- `log_writer.c`: `KdaMonLogWriterWriteRegistryEvent`, dispatched via switch in `KdaMonLogWriterWriteEvent`, with type-aware `value_data` formatting: escaped string for `REG_SZ`/`REG_EXPAND_SZ`, decimal for `REG_DWORD`/`REG_QWORD`, hex for `REG_BINARY` and unhandled types
+- `KDAMON_REG_ALTITUDE`, `KDAMON_REG_PATH_MAX`, `KDAMON_REG_VALUENAME_MAX`, `KDAMON_REG_VALUEDATA_MAX` in `kdamon_config.h`
+- Registered/unregistered in `DriverEntry`/`DriverUnload`, after the image load callback, consistent with all event producers being torn down before the queue and log writer
+
+### Changed
+- `KDAMON_NETWORK_EVENT_DATA.ProcessId` and `KDAMON_REGISTRY_EVENT_DATA.ProcessId` changed from `ULONG` to `HANDLE` for type correctness with Windows PID APIs, matching `KDAMON_PROCESS_EVENT_DATA.ProcessId`; corresponding cast updates in `wfp_callout.c` (`(HANDLE)inMetaValues->processId`) and `log_writer.c` (`(ULONG)(ULONG_PTR)...` for display)
+
+### Notes
+- Validated on Windows test VM via `reg add`/`reg delete` covering all three actions and all major value types (`REG_SZ`, `REG_EXPAND_SZ`, `REG_DWORD`, `REG_QWORD`, `REG_BINARY`); dbgview confirms clean registration/unregistration with no BSOD or orphaned callback on unload
+
+### Known limitations
+- `SET_VALUE`/`DELETE_VALUE` have no captured `NTSTATUS`
+- `REG_MULTI_SZ` is formatted as hex rather than parsed into its component strings
+
+---
+
 ## [0.8] - 2026-08-09
 
 Third sensor: outbound and inbound network connections captured via WFP callouts on the ALE layers, using the provider/sublayer infrastructure from v0.7.

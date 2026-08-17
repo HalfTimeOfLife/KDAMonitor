@@ -27,7 +27,7 @@ style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
       font-size="22"
       font-weight="600"
       fill="#212121">
-KDAMonitor v0.8 Architecture
+KDAMonitor v0.9 Architecture
 </text>
 
 
@@ -113,7 +113,7 @@ IOCTL interface
 <!-- Callbacks -->
 <rect x="520" y="190"
       width="230"
-      height="130"
+      height="150"
       rx="10"
       fill="#fff8e1"
       stroke="#f9a825"
@@ -134,20 +134,26 @@ Kernel Sensors
 Process monitoring ✓
 </text>
 
-<text x="635" y="270"
+<text x="635" y="268"
       text-anchor="middle"
       font-size="12"
       fill="#f57f17">
 Image monitoring ✓
 </text>
 
-<text x="635" y="295"
+<text x="635" y="291"
       text-anchor="middle"
       font-size="12"
       fill="#f57f17">
 Network monitoring ✓
 </text>
 
+<text x="635" y="314"
+      text-anchor="middle"
+      font-size="12"
+      fill="#f57f17">
+Registry monitoring ✓
+</text>
 
 
 <!-- Event Queue -->
@@ -236,9 +242,9 @@ logs.jsonl
 
 <!-- Callback -> Queue -->
 <line x1="635"
-      y1="320"
+      y1="340"
       x2="570"
-      y2="350"
+      y2="380"
       stroke="#616161"
       stroke-width="1.5"
       marker-end="url(#arrow)"/>

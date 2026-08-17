@@ -7,7 +7,7 @@ A Windows kernel driver (in C) for logging process, image load, network connecti
 
 ## Status
 
-Under development: currently at **v0.8 (Network connection monitoring)**. Process, image load, and outbound/inbound IPv4 network connections are monitored and logged in real time; IPv6 not yet covered. See [ROADMAP.md](./ROADMAP.md) for planned versions.
+Under development: currently at **v0.9 (Registry activity monitoring)**. Process, image load, outbound/inbound IPv4 network connections, and registry create/set/delete value activity are monitored and logged in real time; IPv6 not yet covered. See [ROADMAP.md](./ROADMAP.md) for planned versions.
 
 ---
 
@@ -15,14 +15,14 @@ Under development: currently at **v0.8 (Network connection monitoring)**. Proces
 
 KDAMonitor is made of two components:
 
-- **`driver/`**: a Windows kernel driver (`.sys`) that runs at the kernel level, registering with native kernel callbacks (process, thread, image load, registry) and WFP (network) to observe system activity from a point malware cannot easily see or bypass.
+- **`driver/`**: a Windows kernel driver (`.sys`) that runs at the kernel level, registering with native kernel callbacks (process, thread, image load, registry) and WFP (network) to observe system activity from a point malware cannot easily see or bypass. Process, image load, network, and registry sensors are implemented.
 - **`client/`** *(minimal test client for now; full real-time viewer planned for v0.11)*: a usermode command-line application that connects to the driver...
 
 The intended use case is malware sandbox analysis: run a sample in an isolated VM with KDAMonitor loaded, and get a full timeline (through logs) of its process, network, and persistence activity after execution.
 
 ---
 
-## Architecture (v0.8)
+## Architecture (v0.9)
 
 ![KDAMonitor architecture](docs/kdamonitor_architecture.svg)
 
@@ -34,7 +34,7 @@ The intended use case is malware sandbox analysis: run a sample in an isolated V
 
 This diagram represents the intended long-term architecture of KDAMonitor.
 
-The current implementation is at **v0.7**, where process monitoring, image load monitoring, and WFP session setup are implemented. The architecture shown above is a design target for the v1.0 release, including the network callout, registry and thread sensors, and the usermode client.
+The current implementation is at **v0.9**, where process monitoring, image load monitoring, network monitoring, and registry monitoring are implemented. The architecture shown above is a design target for the v1.0 release, including the thread sensor and the usermode client.
 
 This design is not fixed and may evolve during development.
 
@@ -48,7 +48,7 @@ This design is not fixed and may evolve during development.
 
 ---
 
-## Project structure (v0.8)
+## Project structure (v0.9)
 
 ```bash
 KDAMonitor/
@@ -76,6 +76,7 @@ KDAMonitor/
 │   │   ├── kdamon_shared.h
 │   │   ├── log_writer.h
 │   │   ├── process_callback.h
+│   │   ├── registry_callback.h
 │   │   ├── wfp_callout.h
 │   │   └── wfp_session.h
 │   ├── src
@@ -87,6 +88,7 @@ KDAMonitor/
 │   │   ├── ioctl.c
 │   │   ├── log_writer.c
 │   │   ├── process_callback.c
+│   │   ├── registry_callback.c
 │   │   ├── wfp_callout.c
 │   │   └── wfp_session.c
 │   ├── KDAMonitor.inf

@@ -4,15 +4,6 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
-## [0.9] - Registry Callback
-Fourth sensor: logs registry activity.
-
-### Added
-- `registry_callback.c`: logs create/set/delete value
-- `log_writer.c`: dedicated write function, `KdaMonLogWriterWriteRegistryEvent`, for registry events, per established pattern
-
----
-
 ## [0.10] - Thread Callback
 Last sensor: capture thread create/exit events.
 
@@ -60,7 +51,7 @@ Validated against real malware samples in isolated VM and write full docs + READ
 | v0.6 | `image_callback.c` | Image/DLL load monitoring | Shipped |
 | v0.7 | `wfp_session.c` | WFP session setup | Shipped |
 | v0.8 | `wfp_callout.c` | Network connection monitoring | Shipped |
-| v0.9 | `registry_callback.c` | Registry activity monitoring | Planned |
+| v0.9 | `registry_callback.c` | Registry activity monitoring | Shipped |
 | v0.10 | `thread_callback.c` | Thread create/exit monitoring | Planned |
 | v0.11 | Refactor | Structural cleanup | Planned |
 | v0.12 | `client/` | Usermode client | Planned |
