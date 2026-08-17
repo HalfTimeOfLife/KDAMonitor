@@ -72,6 +72,70 @@ static BOOLEAN KdaMonJsonEscapeW(_In_ PCWSTR Source, _Out_writes_z_(DestSize) PS
     return TRUE;
 }
 
+static NTSTATUS KdaMonRegistryFormatValueData(_In_ const KDAMON_REGISTRY_EVENT_DATA* RegistryData, _Out_writes_z_(BufferSize) PSTR Buffer, _In_ SIZE_T BufferSize)
+{
+    switch (RegistryData->ValueType)
+    {
+    case REG_SZ:
+    case REG_EXPAND_SZ:
+    {
+        WCHAR TempBuf[(KDAMON_REG_VALUEDATA_MAX / sizeof(WCHAR)) + 1] = { 0 };
+        SIZE_T Count = RegistryData->ValueDataSize / sizeof(WCHAR);
+
+        if (Count >= RTL_NUMBER_OF(TempBuf))
+        {
+            Count = RTL_NUMBER_OF(TempBuf) - 1;
+        }
+
+        RtlCopyMemory(TempBuf, RegistryData->ValueData, Count * sizeof(WCHAR));
+        TempBuf[Count] = L'\0';
+
+        CHAR Escaped[520];
+        if (!KdaMonJsonEscapeW(TempBuf, Escaped, sizeof(Escaped)))
+        {
+            KdPrint((DRIVER_TAG " [WARNING]: ValueData (string) truncated during JSON escape\n"));
+        }
+
+        return RtlStringCbPrintfA(Buffer, BufferSize, "\"%s\"", Escaped);
+    }
+    case REG_DWORD:
+    {
+        ULONG Value = 0;
+        if (RegistryData->ValueDataSize >= sizeof(ULONG))
+        {
+            RtlCopyMemory(&Value, RegistryData->ValueData, sizeof(ULONG));
+        }
+        return RtlStringCbPrintfA(Buffer, BufferSize, "%lu", Value);
+    }
+    case REG_QWORD:
+    {
+        ULONGLONG Value = 0;
+        if (RegistryData->ValueDataSize >= sizeof(ULONGLONG))
+        {
+            RtlCopyMemory(&Value, RegistryData->ValueData, sizeof(ULONGLONG));
+        }
+        return RtlStringCbPrintfA(Buffer, BufferSize, "%llu", Value);
+    }
+    default:
+    {
+        static const CHAR HexDigits[] = "0123456789abcdef";
+        CHAR HexBuf[(KDAMON_REG_VALUEDATA_MAX * 2) + 1];
+        SIZE_T Out = 0;
+        SIZE_T Length = min(RegistryData->ValueDataSize, KDAMON_REG_VALUEDATA_MAX);
+
+        for (SIZE_T i = 0; i < Length && (Out + 2) < sizeof(HexBuf); i++)
+        {
+            UCHAR Byte = RegistryData->ValueData[i];
+            HexBuf[Out++] = HexDigits[(Byte >> 4) & 0xF];
+            HexBuf[Out++] = HexDigits[Byte & 0xF];
+        }
+        HexBuf[Out] = '\0';
+
+        return RtlStringCbPrintfA(Buffer, BufferSize, "\"%s\"", HexBuf);
+    }
+    }
+}
+
 // --- Write event helpers ---
 
 static NTSTATUS KdaMonLogWriterWriteProcessEvent(_In_ const KDAMON_EVENT* Event, _Out_writes_z_(BufferSize) PSTR EventBuffer, _In_ SIZE_T BufferSize)
@@ -177,7 +241,7 @@ static NTSTATUS KdaMonLogWriterWriteNetworkEvent(
         Event->Id,
         KdaMonEventTypeToString(Event->Type),
         Event->Timestamp.QuadPart,
-        Event->Data.Network.ProcessId,
+        (ULONG)(ULONG_PTR)Event->Data.Network.ProcessId,
         EscapedPath,
         direction,
         protocol,
@@ -191,7 +255,94 @@ static NTSTATUS KdaMonLogWriterWriteNetworkEvent(
 }
 
 
-// TODO: KdaMonLogWriterWriteRegistryEvent (v0.9)
+static NTSTATUS KdaMonLogWriterWriteRegistryEvent(_In_ const KDAMON_EVENT* Event, _Out_writes_z_(BufferSize) PSTR EventBuffer, _In_ SIZE_T BufferSize)
+{
+    CHAR EscapedKeyPath[520];
+    CHAR EscapedValueName[520];
+    CHAR FormattedValueData[600];
+    CHAR StatusField[16];
+
+    const char* action;
+
+    if (!KdaMonJsonEscapeW(Event->Data.Registry.KeyPath, EscapedKeyPath, sizeof(EscapedKeyPath)))
+    {
+        KdPrint((DRIVER_TAG " [WARNING]: KeyPath truncated during JSON escape (event %lu)\n", Event->Id));
+    }
+
+    switch (Event->Data.Registry.Action)
+    {
+    case KDAMON_REGISTRY_ACTION_SET_VALUE:
+    {
+        action = "set_value";
+        break;
+    }
+    case KDAMON_REGISTRY_ACTION_DELETE_VALUE:
+    {
+        action = "delete_value";
+        break;
+    }
+    case KDAMON_REGISTRY_ACTION_CREATE_KEY:
+    {
+        action = "create_key";
+        break;
+    }
+    default: 
+    {
+        action = "unknown";
+        break;
+    }
+    }
+
+    if (Event->Data.Registry.Action == KDAMON_REGISTRY_ACTION_CREATE_KEY)
+    {
+        RtlStringCbCopyA(EscapedValueName, sizeof(EscapedValueName), "");
+        RtlStringCbCopyA(FormattedValueData, sizeof(FormattedValueData), "null");
+    }
+    else
+    {
+        if (!KdaMonJsonEscapeW(Event->Data.Registry.ValueName, EscapedValueName, sizeof(EscapedValueName)))
+        {
+            KdPrint((DRIVER_TAG " [WARNING]: ValueName truncated during JSON escape (event %lu)\n", Event->Id));
+        }
+
+        if (Event->Data.Registry.Action == KDAMON_REGISTRY_ACTION_SET_VALUE)
+        {
+            KdaMonRegistryFormatValueData(&Event->Data.Registry, FormattedValueData, sizeof(FormattedValueData));
+        }
+        else
+        {
+            RtlStringCbCopyA(FormattedValueData, sizeof(FormattedValueData), "null");
+        }
+    }
+
+    if (Event->Data.Registry.Action == KDAMON_REGISTRY_ACTION_CREATE_KEY)
+    {
+        RtlStringCbPrintfA(StatusField, sizeof(StatusField), "\"0x%08X\"", (ULONG)Event->Data.Registry.Status);
+    }
+    else
+    {
+        RtlStringCbCopyA(StatusField, sizeof(StatusField), "null");
+    }
+
+    return RtlStringCbPrintfA(
+        EventBuffer,
+        BufferSize,
+        "{\"id\":%lu,\"type\":\"%s\",\"timestamp\":%lld,"
+        "\"pid\":%lu,\"action\":\"%s\","
+        "\"key_path\":\"%s\",\"value_name\":\"%s\",\"value_data\":%s,"
+        "\"status\":%s}\n",
+        Event->Id,
+        KdaMonEventTypeToString(Event->Type),
+        Event->Timestamp.QuadPart,
+        (ULONG)(ULONG_PTR)Event->Data.Registry.ProcessId,
+        action,
+        EscapedKeyPath,
+        EscapedValueName,
+        FormattedValueData,
+        StatusField
+    );
+}
+
 // TODO: KdaMonLogWriterWriteThreadEvent (v0.10)
 
 // --- File I/O helpers ---
@@ -361,8 +512,10 @@ static NTSTATUS KdaMonLogWriterWriteEvent(_In_ const KDAMON_EVENT* Event)
     case KdaMonEventNetwork:
         status = KdaMonLogWriterWriteNetworkEvent(Event, EventBuffer, sizeof(EventBuffer));
         break;
+    case KdaMonEventRegistry:
+        status = KdaMonLogWriterWriteRegistryEvent(Event, EventBuffer, sizeof(EventBuffer));
+        break;
 
-		// TODO: case KdaMonEventRegistry: (v0.9)
 		// TODO: case KdaMonEventThread: (v0.10)
 
     default:

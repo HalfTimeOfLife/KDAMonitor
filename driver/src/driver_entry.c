@@ -6,6 +6,7 @@
 #include "log_writer.h"
 #include "process_callback.h"
 #include "image_callback.h"
+#include "registry_callback.h"
 #include "wfp_session.h"
 #include "wfp_callout.h"
 
@@ -19,6 +20,7 @@ void DriverUnload(_In_ PDRIVER_OBJECT DriverObject)
 	KdPrint((DRIVER_TAG " [INFO]: Driver Unload begin\n"));
 
 	// --- Unregister callbacks ---
+	KdaMonRegistryCallbackUnregister();
 	KdaMonImageCallbackUnregister();
 	KdaMonProcessCallbackUnregister();
 
@@ -33,7 +35,7 @@ void DriverUnload(_In_ PDRIVER_OBJECT DriverObject)
 
 	// --- Cleanup WFP session ---
 	KdaMonWfpSessionCleanup();
-	
+
 	// --- Delete device object ---
 	KdaMonDeleteDevice(&g_DeviceObject);
 	KdPrint((DRIVER_TAG " [INFO]: Driver Unload complete\n"));
@@ -72,7 +74,7 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 		KdPrint((DRIVER_TAG " [ERROR]: KdaMonWfpCalloutRegister failed\n"));
 		goto cleanup_wfp;
 	}
-	
+
 	// --- Initialize the event queue ---
 	if (!KdaMonEventQueueInitialize())
 	{
@@ -105,9 +107,19 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 		goto cleanup_process;
 	}
 
+	// --- Register registry callback ---
+	status = KdaMonRegistryCallbackRegister(DriverObject);
+	if (!NT_SUCCESS(status))
+	{
+		KdPrint((DRIVER_TAG " [ERROR]: KdaMonRegistryCallbackRegister failed\n"));
+		goto cleanup_image;
+	}
+
 	KdPrint((DRIVER_TAG " [INFO]: Initialized successfully\n"));
 	return STATUS_SUCCESS;
 
+cleanup_image:
+	KdaMonImageCallbackUnregister();
 cleanup_process:
 	KdaMonProcessCallbackUnregister();
 cleanup_logwriter:

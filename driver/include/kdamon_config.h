@@ -5,6 +5,11 @@
 #include <ntddk.h>
 #undef WIN32_NO_STATUS
 
+#define KDAMON_REG_PATH_MAX 260
+#define KDAMON_REG_VALUENAME_MAX 260
+#define KDAMON_REG_VALUEDATA_MAX 256
+#define KDAMON_REG_ALTITUDE L"360000"
+
 #define DRIVER_TAG "[KDAMonitor]"
 
 #define KDAMON_DEVICE_NAME L"\\Device\\KDAMonitor"
@@ -14,3 +19,4 @@
 #define KDAMON_LOG_DIR L"\\??\\C:\\KDAMonitor\\logs\\"
 #define KDAMON_LOG_FILE_PREFIX L"kdamon_"
 #define KDAMON_LOG_FILE_EXTENSION L".jsonl"
+

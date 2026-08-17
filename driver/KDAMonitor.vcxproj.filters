@@ -31,6 +31,9 @@
     <ClCompile Include="src\guids.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="src\registry_callback.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\device.h">
@@ -67,6 +70,9 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="include\wfp_callout.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="include\registry_callback.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>

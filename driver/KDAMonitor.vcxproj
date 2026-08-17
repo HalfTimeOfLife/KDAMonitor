@@ -122,6 +122,7 @@
     <ClCompile Include="src\ioctl.c" />
     <ClCompile Include="src\log_writer.c" />
     <ClCompile Include="src\process_callback.c" />
+    <ClCompile Include="src\registry_callback.c" />
     <ClCompile Include="src\wfp_callout.c" />
     <ClCompile Include="src\wfp_session.c" />
   </ItemGroup>
@@ -136,6 +137,7 @@
     <ClInclude Include="include\kdamon_shared.h" />
     <ClInclude Include="include\log_writer.h" />
     <ClInclude Include="include\process_callback.h" />
+    <ClInclude Include="include\registry_callback.h" />
     <ClInclude Include="include\wfp_callout.h" />
     <ClInclude Include="include\wfp_session.h" />
   </ItemGroup>
